@@ -1,0 +1,8 @@
+.venv
+.vscode
+__pycache__
+.code-workspace
+test.cpp
+test.exe
+cmake-build-debug
+CMakeLists.txt
