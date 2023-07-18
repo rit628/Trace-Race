@@ -1,7 +1,8 @@
-.venv
 .vscode
-__pycache__
-.code-workspace
+game
+game.exe
+game.out
+*.code-workspace
 test.cpp
 test.exe
 cmake-build-debug
