@@ -3,6 +3,8 @@
 using namespace std;
 using namespace sf;
 
+default_random_engine Board::gen;
+
 void Board::build(unsigned int numRows, unsigned int numCols)
 {
     this->reset();
@@ -16,6 +18,14 @@ void Board::build(unsigned int numRows, unsigned int numCols)
         for (int j = 0; j < numCols; j++)
         {
             temp.push_back(new Tile((tileDim*j), (tileDim*i), id));
+            if (j > 0)
+            {
+                temp.at(j)->addNeighbor(temp.at(j-1));
+            }
+            if (i > 0)
+            {
+                temp.at(j)->addNeighbor(this->tiles.at(i-1).at(j));
+            }         
             id++;
         }
         this->tiles.push_back(temp);
@@ -99,4 +109,60 @@ void Board::writeToFile(string fileName)
         
     }
     
+}
+
+void Board::generate(unsigned int numRows, unsigned int numCols)
+{
+    if (numRows == 0)
+    {
+        uniform_int_distribution<int> dist(1, 200);
+        numRows = dist(gen);
+    }
+    if (numCols == 0)
+    {
+        uniform_int_distribution<int> dist(1, 200);
+        numCols = dist(gen);
+    }
+    build(numRows, numCols);
+    uniform_int_distribution<int> dist(0, numRows*numCols-1);
+    vector<Tile*> wallList;
+    unordered_set<Tile*> visited;
+    int pathCount = 0;
+    int index = dist(gen);
+    Tile* currVertex = this->tiles.at(index / numCols).at(index % numCols);
+    visited.emplace(currVertex);
+    this->paths.push_back(currVertex);
+    wallList.insert(wallList.begin(), currVertex->neighbors.begin(), currVertex->neighbors.end());
+    visited.insert(currVertex->neighbors.begin(), currVertex->neighbors.end());
+    while (!wallList.empty())
+    {
+        pathCount = 0;
+        uniform_int_distribution<int> wallSelect(0, wallList.size()-1);
+        index = wallSelect(gen);
+        currVertex = wallList.at(index);
+        wallList.erase(wallList.begin() + index);
+        visited.emplace(currVertex);
+        this->paths.push_back(currVertex);
+        for (auto vertex : currVertex->neighbors)
+        {
+            if (!vertex->isWall)
+            {
+                pathCount++;
+            }
+        }
+        if (pathCount > 1)
+        {
+            continue;
+        }
+        currVertex->flip();  
+        for (auto vertex : currVertex->neighbors)
+        {
+            if ((vertex->isWall) && (visited.count(vertex) == 0))
+            {
+                visited.emplace(vertex);
+                wallList.push_back(vertex);
+            }
+        }
+    }
+
 }

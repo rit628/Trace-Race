@@ -14,9 +14,9 @@ class Player
     public:
         Player(std::string name);
         ~Player();
-        void onClick(sf::Vector2f pos);
+        void onClick(sf::Vector2i pos);
         void buildBoard(unsigned int numRows, unsigned int numCols);
         void buildBoard(std::string fileName);
         void editBoard(sf::RenderWindow& window, sf::Font& font);
-        std::string getFileName(sf::RenderWindow& winfow, sf::Font& font);
+        std::string getFileName(sf::RenderWindow& window, sf::Font& font);
 };

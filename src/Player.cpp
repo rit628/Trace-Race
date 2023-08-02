@@ -10,13 +10,11 @@ Player::~Player()
     this->board.reset();
 }
 
-void Player::onClick(Vector2f pos)
+void Player::onClick(Vector2i pos)
 {
-    unsigned int col = floor(pos.x/this->board.tileDim);
-    unsigned int row = floor(pos.y/this->board.tileDim);
-    if ((col < this->board.numCols) && (row < this->board.numRows))
+    if ((pos.x < this->board.numCols) && (pos.y < this->board.numRows))
     {
-        this->board.updateTile(row, col);
+        this->board.updateTile(pos.y, pos.x);
     }   
 }
 
@@ -34,13 +32,17 @@ void Player::editBoard(RenderWindow& window, Font& font)
 {
     // Needs updated UI
     bool panning = false;
+    bool editing = false;
+    Vector2i pixel;
+    Vector2i tileHover;
+    vector<Vector2i> tileStack;
     View camera(FloatRect(0, 0, 250, 250));
     camera.setCenter(this->board.numCols*16, this->board.numRows*16);
     camera.setViewport(FloatRect(0, .25, 1, 1));
     window.setView(camera);
     Vector2f m0;
     Vector2f m1;
-    Vector2i pixel;
+    Vector2f coords;
     string fileName;
 
     Text editorText("Editor Menu Keybindings:\nLeft Click (M1)- Edit Grid Element\nRight Click (M2)- Pan Grid View\n"
@@ -69,6 +71,11 @@ void Player::editBoard(RenderWindow& window, Font& font)
                         this->board.writeToFile(fileName);
                         return;
                     }
+                    else if (event.key.code == Keyboard::G)
+                    {
+                        this->board.generate(15, 15);
+                    }
+                    
                     else if (event.key.code == Keyboard::Escape)
                     {
                         return;
@@ -78,8 +85,12 @@ void Player::editBoard(RenderWindow& window, Font& font)
                 case Event::MouseButtonPressed:
                     if (event.mouseButton.button == Mouse::Left)
                     {
-                        pixel = Vector2i(event.mouseButton.x, event.mouseButton.y);
-                        onClick(window.mapPixelToCoords(pixel));
+                        editing = true;
+                        coords = window.mapPixelToCoords(Vector2i(event.mouseButton.x, event.mouseButton.y));
+                        tileHover.x = floor(coords.x/board.tileDim);
+                        tileHover.y = floor(coords.y/board.tileDim);
+                        tileStack.push_back(tileHover);
+                        onClick(tileHover);
                     }
                     else if (event.mouseButton.button == Mouse::Right)
                     {
@@ -89,14 +100,31 @@ void Player::editBoard(RenderWindow& window, Font& font)
                     break;
 
                 case Event::MouseButtonReleased:
-                    if (event.mouseButton.button == Mouse::Right)
+                    if (event.mouseButton.button == Mouse::Left)
+                    {
+                        tileStack.clear();
+                        editing = false;                    
+                    }
+
+                    else if (event.mouseButton.button == Mouse::Right)
                     {
                         panning = false;                    
                     }
                     break;
 
                 case Event::MouseMoved:
-                    if (panning)
+                    if (editing)
+                    {
+                        coords = window.mapPixelToCoords(Mouse::getPosition(window));
+                        tileHover.x = floor(coords.x/board.tileDim);
+                        tileHover.y = floor(coords.y/board.tileDim);
+                        if (tileHover != tileStack.back())
+                        {
+                            tileStack.push_back(tileHover);
+                            onClick(tileHover);
+                        }                        
+                    }
+                    else if (panning)
                     {
                         m1 = window.mapPixelToCoords(Mouse::getPosition(window));
                         camera.setCenter(camera.getCenter() + m0 - m1);
