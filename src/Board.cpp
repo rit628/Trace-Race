@@ -37,10 +37,10 @@ void Board::build(string fileName)
     bool isWall;
     unsigned int x;
     unsigned int y;
-    for (int i = 0; i < numCols; i++)
+    for (int i = 0; i < numRows; i++)
     {
         temp.clear();
-        for (int j = 0; j < numRows; j++)
+        for (int j = 0; j < numCols; j++)
         {
             file >> buff;
             id = stoi(buff.substr(0, buff.find(',')));
