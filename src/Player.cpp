@@ -9,6 +9,9 @@
 using namespace std;
 using namespace sf;
 
+
+//checking if push works
+
 // Function to calculate the center position of a window relative to another window
 Vector2i getCenteredPosition(const Window& parent, const Vector2u& size) {
     const Vector2i parentCenter(parent.getPosition().x + parent.getSize().x / 2, parent.getPosition().y + parent.getSize().y / 2);
