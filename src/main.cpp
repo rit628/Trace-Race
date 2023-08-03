@@ -26,7 +26,7 @@ int main(int argc, char const *argv[])
     RenderWindow window(VideoMode(mainMenuTexture.getSize().x, mainMenuTexture.getSize().y), "Trace Race", Style::Default);
 
     // Set the initial window position to the center of the screen
-    sf::Vector2i screenCenter(monitorWidth / 2, monitorHeight / 2);
+    sf::Vector2i screenCenter(sf::VideoMode::getDesktopMode().width / 2, sf::VideoMode::getDesktopMode().height / 2);
     sf::Vector2i windowPosition(screenCenter.x - window.getSize().x / 2, screenCenter.y - window.getSize().y / 2);
     window.setPosition(windowPosition);
 
@@ -97,6 +97,7 @@ int main(int argc, char const *argv[])
                                     {
                         // input selection
                         RenderWindow selectorType(VideoMode(600,600), "Choose Dimensional Input", Style::Close);
+                        selectorType.setPosition(windowPosition);
                         selectorType.setFramerateLimit(360);
                         Text inputChoice("f- Matrix Input\n" "d- Manual Input \n", font, 24);
                         inputChoice.setFillColor(Color::Black);
@@ -138,6 +139,7 @@ int main(int argc, char const *argv[])
                         if (isMatrixInput) {
                             // Matrix Selector Section
                             RenderWindow matrixSelector(VideoMode(600, 600), "Select Race Dimensions [MATRIX INPUT]", Style::Close);
+                            matrixSelector.setPosition(windowPosition);
                             unsigned int maxRows = 50;
                             unsigned int maxCols = 50;
                             float cellWidth = matrixSelector.getSize().x / static_cast<float>(maxCols);
