@@ -41,9 +41,9 @@ void Player::resetBoard(bool wall)
 
 void Player::editBoard(RenderWindow& window, Font& font)
 {
-    sf::Vector2i screenCenter(sf::VideoMode::getDesktopMode().width / 2, sf::VideoMode::getDesktopMode().height / 2);
-    sf::Vector2i windowPosition(screenCenter.x - window.getSize().x / 2, screenCenter.y - window.getSize().y / 2);
-    window.setPosition(windowPosition);
+//    sf::Vector2i screenCenter(sf::VideoMode::getDesktopMode().width / 2, sf::VideoMode::getDesktopMode().height / 2);
+//    sf::Vector2i windowPosition(screenCenter.x - window.getSize().x / 2, screenCenter.y - window.getSize().y / 2);
+//    window.setPosition(windowPosition);
     bool panning = false;
     bool editing = false;
     const std::vector<std::string> dropdownOptions = { "Option 1", "Option 2" };

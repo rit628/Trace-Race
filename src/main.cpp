@@ -1,7 +1,10 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <map>
 #include <string>
 #include "Player.h"
+#include "ButtonMaker.h"
+#include "MatrixSelector.h"
 #include "iostream"
 
 using namespace std;
@@ -14,21 +17,23 @@ int main(int argc, char const *argv[])
     Tile::loadTextures();
     Font font;
     font.loadFromFile("files/font.ttf");
-    unsigned int monitorWidth = VideoMode::getDesktopMode().width;
-    unsigned int monitorHeight = VideoMode::getDesktopMode().height;
+//    unsigned int monitorWidth = VideoMode::getDesktopMode().width;
+//    unsigned int monitorHeight = VideoMode::getDesktopMode().height;
     unsigned int numRows = 10;
     unsigned int numCols = 10;
     string fileName = "map";
     string dims;
 
+    // REMOVE
+    cout << "change" << endl;
     sf::Texture mainMenuTexture;
     mainMenuTexture.loadFromFile("files/images/main_menu.png");
     RenderWindow window(VideoMode(mainMenuTexture.getSize().x, mainMenuTexture.getSize().y), "Trace Race", Style::Default);
 
     // Set the initial window position to the center of the screen
-    sf::Vector2i screenCenter(monitorWidth / 2, monitorHeight / 2);
-    sf::Vector2i windowPosition(screenCenter.x - window.getSize().x / 2, screenCenter.y - window.getSize().y / 2);
-    window.setPosition(windowPosition);
+//    sf::Vector2i screenCenter(monitorWidth / 2, monitorHeight / 2);
+//    sf::Vector2i windowPosition(screenCenter.x - window.getSize().x / 2, screenCenter.y - window.getSize().y / 2);
+//    window.setPosition(windowPosition);
 
     window.setFramerateLimit(360);
 
@@ -38,29 +43,26 @@ int main(int argc, char const *argv[])
     mainMenuSprite.setTexture(mainMenuTexture);
     mainMenuSprite.setScale(scaleX, scaleY);
 
-    float newGameX = 0.0f;
-    float newGameY = 222.0f;
-    float newGameWidth = 315.0f;
-    float newGameHeight = 52.0f;
-
-    float scaledNewGameX = newGameX * scaleX;
-    float scaledNewGameY = newGameY * scaleY;
-    float scaledNewGameWidth = newGameWidth * scaleX;
-    float scaledNewGameHeight = newGameHeight * scaleY;
-
-    sf::Rect<float> newGameZone(scaledNewGameX, scaledNewGameY, scaledNewGameWidth, scaledNewGameHeight);
+    ButtonMaker newGameButton(0.0f, 222.0f, 315.0f, 52.0f);
 
 
     Player* p1 = new Player("Debug");
 
     while (window.isOpen())
     {
+        sf::Music backgroundMusic;
+        if (!backgroundMusic.openFromFile("files/music/Comfort.mp3")) {
+            return -1; // Error handling
+        }
+        backgroundMusic.setLoop(true); // Set the music to loop
+        backgroundMusic.play(); // Start playing the music
 
-        // DEBUG SECTION
-        Vector2i  mousePosition = Mouse::getPosition(window);
+
         bool isMatrixSelectorClosed = false;
         bool isManualInputClosed = false;
-        // MOUSE DEBUGGER
+        Vector2i  mousePosition = Mouse::getPosition(window);
+        // DEBUG SECTION
+       // MOUSE DEBUGGER
 //        cout << "x: "<< mousePosition.x << " y: "<< mousePosition.y << endl;
 
         window.clear(Color::Blue);
@@ -73,17 +75,11 @@ int main(int argc, char const *argv[])
                 sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
                 window.setView(sf::View(visibleArea));
 
-                scaleX = (float)event.size.width / mainMenuTexture.getSize().x;
-                scaleY = (float)event.size.height / mainMenuTexture.getSize().y;
-
                 mainMenuSprite.setScale(scaleX, scaleY);
 
 
                 // move clickables
-                newGameZone.left = newGameX * scaleX;
-                newGameZone.top = newGameY * scaleY;
-                newGameZone.width = newGameWidth * scaleX;
-                newGameZone.height = newGameHeight * scaleY;
+                newGameButton.updateScale(scaleX, scaleY);
             }
             switch (event.type)
             {
@@ -93,9 +89,11 @@ int main(int argc, char const *argv[])
                     break;
                 // create dimension type selector menu
                 case Event::MouseButtonPressed:
-                    if (newGameZone.contains(event.mouseButton.x, event.mouseButton.y))
+
+                    if (newGameButton.isClicked(mousePosition))
                                     {
                         // input selection
+                        //TODO: CREATE MENU FOR INPUT SELECTION
                         RenderWindow selectorType(VideoMode(600,600), "Choose Dimensional Input", Style::Close);
                         selectorType.setFramerateLimit(360);
                         Text inputChoice("f- Matrix Input\n" "d- Manual Input \n", font, 24);
@@ -151,6 +149,7 @@ int main(int argc, char const *argv[])
                                             matrixSelector.close();
                                             break;
                                         case Event::MouseButtonPressed:
+                                            // when size is selected, close menu
                                             if (selectorEvent.mouseButton.button == Mouse::Left) {
                                                 numRows = static_cast<int>(selectorEvent.mouseButton.y / cellHeight) + 1;
                                                 numCols = static_cast<int>(selectorEvent.mouseButton.x / cellWidth) + 1;
@@ -160,8 +159,9 @@ int main(int argc, char const *argv[])
                                             break;
                                     }
                                 }
-                                Vector2i mousePosition = Mouse::getPosition(matrixSelector);
+                                // create background
                                 matrixSelector.clear(Color::White);
+                                // create grid
                                 for (unsigned int i = 0; i < maxRows; i++) {
                                     for (unsigned int j = 0; j < maxCols; j++) {
                                         RectangleShape cell(Vector2f(cellWidth, cellHeight));
@@ -171,7 +171,7 @@ int main(int argc, char const *argv[])
 
                                         if (i * cellHeight <= mousePosition.y && j * cellWidth <= mousePosition.x &&
                                             (i + 1) * cellHeight > mousePosition.y && (j + 1) * cellWidth > mousePosition.x) {
-                                            // highlight cells over entire matrix
+                                            // highlight cells over entire matrix as mouse rolls over
                                             for (int r = 0; r <= i; r++) {
                                                 for (int c = 0; c <= j; c++) {
                                                     RectangleShape highlightCell(Vector2f(cellWidth, cellHeight));
