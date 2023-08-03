@@ -42,8 +42,9 @@ void Tile::flip()
     }
 }
 
-void Tile::addNeighbor(Tile* tile)
+void Tile::addNeighbor(Direction d, Tile* tile)
 {
-    this->neighbors.push_back(tile);
-    tile->neighbors.push_back(this);
+    Direction opposite = (d == Direction::N) ? Direction::S : Direction::E;
+    this->neighbors.emplace(d, tile);
+    tile->neighbors.emplace(opposite, this);
 }
