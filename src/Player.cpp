@@ -34,9 +34,9 @@ void Player::buildBoard(string fileName)
     this->board.build(fileName);
 }
 
-void Player::resetBoard()
+void Player::resetBoard(bool wall)
 {
-    this->board.reset();
+    this->board.resetTiles(wall);
 }
 
 void Player::editBoard(RenderWindow& window, Font& font)
@@ -46,8 +46,6 @@ void Player::editBoard(RenderWindow& window, Font& font)
     window.setPosition(windowPosition);
     bool panning = false;
     bool editing = false;
-    bool isClearButtonClicked = false;
-    bool isChooseAlgorithmButtonClicked = false;
     const std::vector<std::string> dropdownOptions = { "Option 1", "Option 2" };
     int selectedOption = -1; // Default to no option selected
     Vector2i pixel;
@@ -103,7 +101,7 @@ void Player::editBoard(RenderWindow& window, Font& font)
                     "Scroll Wheel Up/Down- Zoom In/Out on Hovered Pixel\nEnter- Save Map to File\nEscape- Return to Debug Menu\n", font, 18);
     editorText.setOrigin(editorText.getLocalBounds().width/2.0, editorText.getLocalBounds().height/2.0);
     editorText.setFillColor(Color::White);
-    editorText.setPosition(editorText.getLocalBounds().width, editorText.getLocalBounds().height);
+    editorText.setPosition(editorText.getLocalBounds().width, editorText.getLocalBounds().height - 20);
 
     const float minCameraY = window.getSize().y - timerBoxHeight - 20;
     const int dropdownButtonHeight = 30;
@@ -149,16 +147,18 @@ void Player::editBoard(RenderWindow& window, Font& font)
                         tileHover.y = floor(coords.y/board.tileDim);
                         tileStack.push_back(tileHover);
                         onClick(tileHover);
+                        window.setView(window.getDefaultView());
+                        coords = window.mapPixelToCoords(Vector2i(event.mouseButton.x, event.mouseButton.y));
                         sf::Vector2f buttonPosition = clearGridButton.getPosition();
                         sf::FloatRect clearGridArea(clearGridText.getGlobalBounds());
                         sf::FloatRect chooseAlgorithmArea(chooseAlgorithmButton.getPosition(), sf::Vector2f(buttonWidth + 60, buttonHeight));
                         if (clearGridArea.contains(coords))
                         {
-                            isClearButtonClicked = true;
+                            this->resetBoard();
                         }
                         else if (chooseAlgorithmArea.contains(coords))
                         {
-                            isChooseAlgorithmButtonClicked = true;
+                            cout << "out" << endl;
 
                             if (!isDropdownVisible)
                             {
@@ -179,6 +179,7 @@ void Player::editBoard(RenderWindow& window, Font& font)
                                 }
                             }
                         }
+                        window.setView(camera);
                     }
                     else if (event.mouseButton.button == Mouse::Right)
                     {
@@ -192,10 +193,6 @@ void Player::editBoard(RenderWindow& window, Font& font)
                     {
                         tileStack.clear();
                         editing = false;
-
-                        isClearButtonClicked = false;
-                        isChooseAlgorithmButtonClicked = false;
-                        isDropdownVisible = false;
                                            
                     }
 
