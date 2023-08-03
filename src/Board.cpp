@@ -66,6 +66,17 @@ void Board::reset()
             delete tile;
         }
     }
+}
+
+void Board::reset()
+{
+    for (auto row : tiles)
+    {
+        for (auto tile : row)
+        {
+            delete tile;
+        }
+    }
     this->tiles.clear();
 }
 
@@ -98,5 +109,60 @@ void Board::writeToFile(string fileName)
         }
         
     }
-    
+}
+
+void Board::generate(unsigned int numRows, unsigned int numCols)
+{
+    if (numRows == 0)
+    {
+        uniform_int_distribution<int> dist(1, 200);
+        numRows = dist(gen);
+    }
+    if (numCols == 0)
+    {
+        uniform_int_distribution<int> dist(1, 200);
+        numCols = dist(gen);
+    }
+    build(numRows, numCols);
+    uniform_int_distribution<int> dist(0, numRows*numCols-1);
+    vector<Tile*> wallList;
+    unordered_set<Tile*> visited;
+    unordered_set<Tile*> added;
+    int pathCount = 0;
+    int index = dist(gen);
+    Tile* currVertex = this->tiles.at(index / numCols).at(index % numCols);
+    visited.emplace(currVertex);
+    this->paths.push_back(currVertex);
+    wallList.insert(wallList.begin(), currVertex->neighbors.begin(), currVertex->neighbors.end());
+    added.insert(currVertex->neighbors.begin(), currVertex->neighbors.end());
+    while (!wallList.empty())
+    {
+        pathCount = 0;
+        uniform_int_distribution<int> wallSelect(0, wallList.size()-1);
+        index = wallSelect(gen);
+        currVertex = wallList.at(index);
+        wallList.erase(wallList.begin() + index);
+        visited.emplace(currVertex);
+        for (auto vertex : currVertex->neighbors)
+        {
+            if (visited.count(vertex) == 1)
+            {
+                pathCount++;
+            }
+        }
+        if (pathCount > 1)
+        {
+            continue;
+        }
+        currVertex->flip();  
+        this->paths.push_back(currVertex);
+        for (auto vertex : currVertex->neighbors)
+        {
+            if ((vertex->isWall) && (added.count(vertex) == 0))
+            {
+                added.emplace(vertex);
+                wallList.push_back(vertex);
+            }
+        }
+    }
 }

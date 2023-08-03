@@ -21,8 +21,13 @@ int main(int argc, char const *argv[])
 
     sf::Texture mainMenuTexture;
     mainMenuTexture.loadFromFile("files/images/main_menu.png");
-
     RenderWindow window(VideoMode(mainMenuTexture.getSize().x, mainMenuTexture.getSize().y), "Trace Race", Style::Default);
+
+    // Set the initial window position to the center of the screen
+    sf::Vector2i screenCenter(monitorWidth / 2, monitorHeight / 2);
+    sf::Vector2i windowPosition(screenCenter.x - window.getSize().x / 2, screenCenter.y - window.getSize().y / 2);
+    window.setPosition(windowPosition);
+
     window.setFramerateLimit(360);
 
     float scaleX = (float)window.getSize().x / mainMenuTexture.getSize().x;
