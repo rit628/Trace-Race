@@ -11,10 +11,8 @@ class Tile : public sf::Drawable
         bool isWall;
         const unsigned int id;
         const sf::Vector2u coords;
-        std::vector<Tile*> neighbors;
         static void loadTextures();
         Tile(unsigned int x, unsigned int y, unsigned int id, bool isWall = true);
         void draw(sf::RenderTarget& target, sf::RenderStates states) const;
         void flip();
-        void addNeighbor(Tile* tile);
 };
