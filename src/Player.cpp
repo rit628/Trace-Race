@@ -13,14 +13,12 @@ Player::~Player()
     this->board.reset();
 }
 
-void Player::onClick(sf::Vector2f pos)
+void Player::onClick(Vector2i pos)
 {
-    unsigned int col = static_cast<unsigned int>(std::floor(pos.x / this->board.tileDim));
-    unsigned int row = static_cast<unsigned int>(std::floor(pos.y / this->board.tileDim));
-    if ((col < this->board.numCols) && (row < this->board.numRows))
+    if ((pos.x < this->board.numCols) && (pos.y < this->board.numRows))
     {
-        this->board.updateTile(row, col);
-    }
+        this->board.updateTile(pos.y, pos.x);
+    }   
 }
 
 void Player::buildBoard(unsigned int numRows, unsigned int numCols)
@@ -45,6 +43,14 @@ void Player::editBoard(sf::RenderWindow& window, sf::Font& font)
     window.setPosition(windowPosition);
 
     bool panning = false;
+    bool editing = false;
+    
+    sf::Vector2f m0;
+    sf::Vector2f m1;
+    sf::Vector2i pixel;
+    sf::Vector2i tileHover;
+    std::vector<sf::Vector2i> tileStack;
+    std::string fileName;
     bool isClearButtonClicked = false;
     bool isChooseAlgorithmButtonClicked = false;
     const std::vector<std::string> dropdownOptions = { "Option 1", "Option 2" };
@@ -57,11 +63,7 @@ void Player::editBoard(sf::RenderWindow& window, sf::Font& font)
     camera.setViewport(sf::FloatRect(0, topLimit, 1, bottomLimit - topLimit));
 
     window.setView(camera);
-
-    sf::Vector2f m0;
-    sf::Vector2f m1;
-    sf::Vector2i pixel;
-    std::string fileName;
+    
 
     const int buttonWidth = 120;
     const int buttonHeight = 30;
@@ -122,6 +124,10 @@ void Player::editBoard(sf::RenderWindow& window, sf::Font& font)
                     this->board.writeToFile(fileName);
                     return;
                 }
+                else if (event.key.code == sf::Keyboard::G)
+                {
+                    this->board.generate(15, 15);
+                }
                 else if (event.key.code == sf::Keyboard::Escape)
                 {
                     return;
@@ -131,8 +137,13 @@ void Player::editBoard(sf::RenderWindow& window, sf::Font& font)
             case sf::Event::MouseButtonPressed:
                 if (event.mouseButton.button == sf::Mouse::Left)
                 {
+                    editing = true;                    
                     pixel = sf::Vector2i(event.mouseButton.x, event.mouseButton.y);
                     sf::Vector2f worldPos = window.mapPixelToCoords(pixel);
+                    tileHover.x = floor(worldPos.x/board.tileDim);
+                    tileHover.y = floor(worldPos.y/board.tileDim);
+                    tileStack.push_back(tileHover);
+                    onClick(tileHover);
 
                     sf::Vector2f buttonPosition = clearGridButton.getPosition();
                     sf::FloatRect clearGridArea(clearGridText.getGlobalBounds());
@@ -189,37 +200,40 @@ void Player::editBoard(sf::RenderWindow& window, sf::Font& font)
                     }
                     else if (!isDropdownVisible)
                     {
-                        // Check if the click is on the board and flip the tiles accordingly
-                        unsigned int col = static_cast<unsigned int>(std::floor(worldPos.x / this->board.tileDim));
-                        unsigned int row = static_cast<unsigned int>(std::floor(worldPos.y / this->board.tileDim));
-                        if ((col < this->board.numCols) && (row < this->board.numRows))
-                        {
-                            this->board.updateTile(row, col);
-                        }
+                        tileStack.clear();
+                        editing = false;       
                     }
-
                     isClearButtonClicked = false;
                     isChooseAlgorithmButtonClicked = false;
                     isDropdownVisible = false;
-                }
-                break;
-
-            case sf::Event::MouseMoved:
-                if (panning)
+                 }
+                 break; 
+             case sf::Event::MouseMoved:
+                if (editing)
                 {
-                    m1 = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+                    sf::Vector2f worldPos = window.mapPixelToCoords(pixel);
+                    tileHover.x = floor(worldPos.x/board.tileDim);
+                    tileHover.y = floor(worldPos.y/board.tileDim);
+                    if (tileHover != tileStack.back())
+                    {
+                        tileStack.push_back(tileHover);
+                        onClick(tileHover);
+                    }                        
+                }
+                else if (panning)
+                {
+                    m1 = window.mapPixelToCoords(Mouse::getPosition(window));
                     camera.setCenter(camera.getCenter() + m0 - m1);
-                    camera.move(m0 - m1);
-
+                    camera.move(m0-m1);
+                    
                     if (camera.getCenter().y < minCameraY)
                     {
-                        camera.setCenter(camera.getCenter().x, minCameraY);
+                      camera.setCenter(camera.getCenter().x, minCameraY);
                     }
-
                     window.setView(camera);
-                    m0 = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+                    m0 = window.mapPixelToCoords(Mouse::getPosition(window));
                 }
-                break;
+                break;                 
 
             case sf::Event::MouseWheelMoved:
                 if (!panning)
