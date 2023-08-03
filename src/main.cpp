@@ -4,6 +4,7 @@
 #include <string>
 #include "Player.h"
 #include "ButtonMaker.h"
+#include "MusicPlayer.h"
 #include "MatrixSelector.h"
 #include "iostream"
 
@@ -37,6 +38,13 @@ int main(int argc, char const *argv[])
 
     window.setFramerateLimit(360);
 
+      // music player
+      MusicPlayer backgroundMusic;
+
+
+
+
+    // load background / adjust scaling
     float scaleX = (float)window.getSize().x / mainMenuTexture.getSize().x;
     float scaleY = (float)window.getSize().y / mainMenuTexture.getSize().y;
     sf::Sprite mainMenuSprite;
@@ -50,14 +58,6 @@ int main(int argc, char const *argv[])
 
     while (window.isOpen())
     {
-        sf::Music backgroundMusic;
-        if (!backgroundMusic.openFromFile("files/music/Comfort.mp3")) {
-            return -1; // Error handling
-        }
-        backgroundMusic.setLoop(true); // Set the music to loop
-        backgroundMusic.play(); // Start playing the music
-
-
         bool isMatrixSelectorClosed = false;
         bool isManualInputClosed = false;
         Vector2i  mousePosition = Mouse::getPosition(window);
@@ -88,6 +88,14 @@ int main(int argc, char const *argv[])
                     window.close();
                     break;
                 // create dimension type selector menu
+
+                // mute music
+                case Event::KeyPressed:
+                    if (event.key.code == Keyboard::M) {
+                        backgroundMusic.toggleMute();
+                    }
+                    break;
+
                 case Event::MouseButtonPressed:
 
                     if (newGameButton.isClicked(mousePosition))
@@ -106,9 +114,17 @@ int main(int argc, char const *argv[])
 
                         while (selectorType.isOpen()) {
                             Event inputEvent;
+
+
                             while (selectorType.pollEvent(inputEvent)) {
                                 if (inputEvent.type == Event::Closed) {
                                     selectorType.close();
+                                }
+                                // mute with m
+                                if (inputEvent.type == Event::KeyPressed) {
+                                    if (inputEvent.key.code == Keyboard::M) {
+                                        backgroundMusic.toggleMute();
+                                    }
                                 }
                                 // f = select matrix input
                                 if (inputEvent.type == Event::KeyPressed) {
@@ -124,7 +140,6 @@ int main(int argc, char const *argv[])
                                         numCols = stoi(dims.substr(dims.find('x')+1));
                                         isManualInputClosed = true;
                                         selectorType.close();
-
                                     }
                                 }
                             }
@@ -148,6 +163,13 @@ int main(int argc, char const *argv[])
                                         case Event::Closed:
                                             matrixSelector.close();
                                             break;
+                                            // mute with m
+                                        case Event::KeyPressed:
+                                            if (event.key.code == Keyboard::M) {
+                                                backgroundMusic.toggleMute();
+                                            }
+                                            break;
+
                                         case Event::MouseButtonPressed:
                                             // when size is selected, close menu
                                             if (selectorEvent.mouseButton.button == Mouse::Left) {
@@ -159,7 +181,7 @@ int main(int argc, char const *argv[])
                                             break;
                                     }
                                 }
-                                // create background
+                                Vector2i mousePositionMatrixSelector = Mouse::getPosition(matrixSelector);
                                 matrixSelector.clear(Color::White);
                                 // create grid
                                 for (unsigned int i = 0; i < maxRows; i++) {
@@ -169,8 +191,8 @@ int main(int argc, char const *argv[])
                                         cell.setOutlineColor(Color::Black);
                                         cell.setOutlineThickness(1.f);
 
-                                        if (i * cellHeight <= mousePosition.y && j * cellWidth <= mousePosition.x &&
-                                            (i + 1) * cellHeight > mousePosition.y && (j + 1) * cellWidth > mousePosition.x) {
+                                        if (i * cellHeight <= mousePositionMatrixSelector.y && j * cellWidth <= mousePositionMatrixSelector.x &&
+                                            (i + 1) * cellHeight > mousePositionMatrixSelector.y && (j + 1) * cellWidth > mousePositionMatrixSelector.x) {
                                             // highlight cells over entire matrix as mouse rolls over
                                             for (int r = 0; r <= i; r++) {
                                                 for (int c = 0; c <= j; c++) {
