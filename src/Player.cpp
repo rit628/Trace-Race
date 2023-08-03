@@ -48,7 +48,6 @@ void Player::resetBoard(bool wall)
     this->board.resetTiles(wall);
 }
 
-
 void Player::editBoard(RenderWindow& window, Font& font)
 {
     sf::Vector2i screenCenter(sf::VideoMode::getDesktopMode().width / 2, sf::VideoMode::getDesktopMode().height / 2);
@@ -189,6 +188,8 @@ void Player::editBoard(RenderWindow& window, Font& font)
                                             algorithmEvent.mouseButton.y >= 0 && algorithmEvent.mouseButton.y <= 50)
                                         {
                                             cout << "Breadth-first search chosen" << endl;
+                                            selectedAlgorithm = PathfindingAlgorithm::BreadthFirstSearch;
+        
                                             algorithmSelectionWindow.close();
                                         }
                                         // Check if Option 2 is clicked
@@ -196,6 +197,8 @@ void Player::editBoard(RenderWindow& window, Font& font)
                                             algorithmEvent.mouseButton.y >= 50 && algorithmEvent.mouseButton.y <= 100)
                                         {
                                             cout << "Depth-first search chosen" << endl;
+                                            selectedAlgorithm = PathfindingAlgorithm::DepthFirstSearch;
+                        
                                             algorithmSelectionWindow.close();
                                         }
                                     }

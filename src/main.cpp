@@ -234,6 +234,19 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
+std::vector<Vector2i> breadthFirstSearch(const Board& board, const Vector2i& start, const Vector2i& goal) {
+    // ... algorithm implementation ...
+    // Return the computed path as a vector of positions (Vector2i)
+    return std::vector<Vector2i>(); // An empty vector as a placeholder
+}
+
+// Function to implement the Depth-First Search algorithm
+std::vector<Vector2i> depthFirstSearch(const Board& board, const Vector2i& start, const Vector2i& goal) {
+    // ... algorithm implementation ...
+    // Return the computed path as a vector of positions (Vector2i)
+    return std::vector<Vector2i>(); // An empty vector as a placeholder
+}
+
 string querySelectorDEBUG(RenderWindow& window, Font& font, string query)
 {
     // In the final version this would be split into two routines
