@@ -129,7 +129,7 @@ void Player::editBoard(RenderWindow& window, Font& font)
                     }
                     else if (event.key.code == Keyboard::G)
                     {
-                        this->board.generate(15, 15);
+                        this->board.generate(this->board.numRows, this->board.numCols);
                     }
                     
                     else if (event.key.code == Keyboard::Escape)

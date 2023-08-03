@@ -2,6 +2,7 @@
 #include "Tile.h" 
 #include <iostream>
 #include <fstream>
+#include <utility>
 
 using namespace std;
 using namespace sf;
@@ -23,11 +24,11 @@ void Board::build(unsigned int numRows, unsigned int numCols)
             temp.push_back(new Tile((tileDim*j), (tileDim*i), id));
             if (j > 0)
             {
-                temp.at(j)->addNeighbor(temp.at(j-1));
+                temp.at(j)->addNeighbor(Direction::W, temp.at(j-1));
             }
             if (i > 0)
             {
-                temp.at(j)->addNeighbor(this->tiles.at(i-1).at(j));
+                temp.at(j)->addNeighbor(Direction::N, this->tiles.at(i-1).at(j));
             }         
             id++;
         }
@@ -140,45 +141,65 @@ void Board::generate(unsigned int numRows, unsigned int numCols)
     }
     build(numRows, numCols);
     uniform_int_distribution<int> dist(0, numRows*numCols-1);
-    vector<Tile*> wallList;
-    unordered_set<Tile*> visited;
+    vector<Tile*> unexplored;
+    vector<pair<Tile*, Tile*>> pathNeighbors;
     unordered_set<Tile*> added;
-    int pathCount = 0;
     int index = dist(gen);
-    Tile* currVertex = this->tiles.at(index / numCols).at(index % numCols);
-    visited.emplace(currVertex);
+    int row = index / numCols;
+    int col = index % numCols;
+    Tile* currVertex = this->tiles.at(row).at(col);
+    Tile* targetCell;
+    Tile* selected;
+    currVertex->flip();
     this->paths.push_back(currVertex);
-    wallList.insert(wallList.begin(), currVertex->neighbors.begin(), currVertex->neighbors.end());
-    added.insert(currVertex->neighbors.begin(), currVertex->neighbors.end());
-    while (!wallList.empty())
+
+    for (auto vertex : currVertex->neighbors)
     {
-        pathCount = 0;
-        uniform_int_distribution<int> wallSelect(0, wallList.size()-1);
+        /// If the current vertex's neighbor at direction X has a neighbor at direction X
+        if (vertex.second->neighbors.count(vertex.first) > 0)
+        {
+            targetCell = vertex.second->neighbors.at(vertex.first);
+            added.emplace(targetCell);
+            unexplored.push_back(targetCell);
+        }
+    }
+
+    while (!unexplored.empty())
+    {
+        // Selects a random vertex from the set of unexplored cells
+        uniform_int_distribution<int> wallSelect(0, unexplored.size()-1);
         index = wallSelect(gen);
-        currVertex = wallList.at(index);
-        wallList.erase(wallList.begin() + index);
-        visited.emplace(currVertex);
-        for (auto vertex : currVertex->neighbors)
-        {
-            if (visited.count(vertex) == 1)
-            {
-                pathCount++;
-            }
-        }
-        if (pathCount > 1)
-        {
-            continue;
-        }
-        currVertex->flip();  
+        currVertex = unexplored.at(index);
+        currVertex->flip();
         this->paths.push_back(currVertex);
+        unexplored.erase(unexplored.begin() + index);
+
+        // Iterates over all possible targets for traversal
         for (auto vertex : currVertex->neighbors)
         {
-            if ((vertex->isWall) && (added.count(vertex) == 0))
+            // If the current vertex's neighbor at direction X has a neighbor at direction X, add it as a target destination
+            if (vertex.second->neighbors.count(vertex.first) > 0)
             {
-                added.emplace(vertex);
-                wallList.push_back(vertex);
+                targetCell = vertex.second->neighbors.at(vertex.first);
+                // If target is a path, add it to the list of possible paths to connect to
+                if (!targetCell->isWall)
+                {
+                    pathNeighbors.push_back({vertex.second, targetCell});
+                }
+                // Otherwise, if target has not been identified, mark it as unexplored
+                else if (added.count(targetCell) == 0)
+                {
+                    added.emplace(targetCell);
+                    unexplored.push_back(targetCell);
+                }
             }
         }
+        uniform_int_distribution<int> pathSelect(0, pathNeighbors.size()-1);
+        index = pathSelect(gen);
+        selected = pathNeighbors.at(index).first;
+        selected->flip();  
+        this->paths.push_back(selected);
+        pathNeighbors.clear();
     }
 
 }
