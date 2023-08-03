@@ -14,8 +14,6 @@ int main(int argc, char const *argv[])
     Tile::loadTextures();
     Font font;
     font.loadFromFile("files/font.ttf");
-//    unsigned int monitorWidth = VideoMode::getDesktopMode().width;
-//    unsigned int monitorHeight = VideoMode::getDesktopMode().height;
     unsigned int numRows = 10;
     unsigned int numCols = 10;
     string fileName = "map";
@@ -32,14 +30,6 @@ int main(int argc, char const *argv[])
     sf::Sprite mainMenuSprite;
     mainMenuSprite.setTexture(mainMenuTexture);
     mainMenuSprite.setScale(scaleX, scaleY);
-
-
-//    Vector2f winCenter = ((Vector2f)window.getSize())/2.0f;
-//    Text debugText("Debug Menu Keybindings:\nd- Set Dimensions\ne- Enter Edit Mode (Dimension Input)\n"
-//                "f- Enter Edit Mode (File Input)\n", font, 24);
-//    debugText.setOrigin(debugText.getLocalBounds().width/2.0, debugText.getLocalBounds().height/2.0);
-//    debugText.setFillColor(Color::Cyan);
-//    debugText.setPosition(winCenter);
 
     float newGameX = 0.0f;
     float newGameY = 222.0f;
