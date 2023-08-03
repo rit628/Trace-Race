@@ -188,14 +188,14 @@ void Player::editBoard(RenderWindow& window, Font& font)
                                         if (algorithmEvent.mouseButton.x >= 0 && algorithmEvent.mouseButton.x <= 200 &&
                                             algorithmEvent.mouseButton.y >= 0 && algorithmEvent.mouseButton.y <= 50)
                                         {
-                                            cout << "Option 1 clicked!" << endl;
+                                            cout << "Breadth-first search chosen" << endl;
                                             algorithmSelectionWindow.close();
                                         }
                                         // Check if Option 2 is clicked
                                         else if (algorithmEvent.mouseButton.x >= 0 && algorithmEvent.mouseButton.x <= 200 &&
                                             algorithmEvent.mouseButton.y >= 50 && algorithmEvent.mouseButton.y <= 100)
                                         {
-                                            cout << "Option 2 clicked!" << endl;
+                                            cout << "Depth-first search chosen" << endl;
                                             algorithmSelectionWindow.close();
                                         }
                                     }
@@ -209,7 +209,7 @@ void Player::editBoard(RenderWindow& window, Font& font)
                                 option1Rect.setFillColor(Color(66, 135, 245));
                                 algorithmSelectionWindow.draw(option1Rect);
 
-                                Text option1Text("Option 1", font, 18);
+                                Text option1Text("Breadth-first", font, 18);
                                 option1Text.setFillColor(Color::White);
                                 option1Text.setOrigin(option1Text.getLocalBounds().width / 2.0f, option1Text.getLocalBounds().height / 2.0f);
                                 option1Text.setPosition(100, 25);
@@ -221,7 +221,7 @@ void Player::editBoard(RenderWindow& window, Font& font)
                                 option2Rect.setPosition(0, 50);
                                 algorithmSelectionWindow.draw(option2Rect);
 
-                                Text option2Text("Option 2", font, 18);
+                                Text option2Text("Depth-first", font, 18);
                                 option2Text.setFillColor(Color::White);
                                 option2Text.setOrigin(option2Text.getLocalBounds().width / 2.0f, option2Text.getLocalBounds().height / 2.0f);
                                 option2Text.setPosition(100, 75);
