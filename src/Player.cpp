@@ -9,9 +9,6 @@
 using namespace std;
 using namespace sf;
 
-
-//checking if push works
-
 // Function to calculate the center position of a window relative to another window
 Vector2i getCenteredPosition(const Window& parent, const Vector2u& size) {
     const Vector2i parentCenter(parent.getPosition().x + parent.getSize().x / 2, parent.getPosition().y + parent.getSize().y / 2);
@@ -56,6 +53,8 @@ void Player::editBoard(RenderWindow& window, Font& font)
     bool panning = false;
     bool editing = false;
     int selectedOption = -1; // Default to no option selected
+    bool isAlgorithmSelectionWindowOpen = false;
+
     Vector2i pixel;
     Vector2i tileHover;
     vector<Vector2i> tileStack;
@@ -96,6 +95,7 @@ void Player::editBoard(RenderWindow& window, Font& font)
     sf::Clock clock;
     const int timerBoxWidth = 240;
     const int timerBoxHeight = 30;
+
     sf::RectangleShape timerBox(sf::Vector2f(timerBoxWidth, timerBoxHeight));
     timerBox.setFillColor(sf::Color(66, 135, 245));
     timerBox.setPosition((window.getSize().x - timerBoxWidth) / 2, window.getSize().y - timerBoxHeight - 10);
@@ -105,11 +105,18 @@ void Player::editBoard(RenderWindow& window, Font& font)
     timerText.setPosition(timerBox.getPosition().x + (timerBoxWidth - timerText.getLocalBounds().width) / 2,
         timerBox.getPosition().y + (timerBoxHeight - timerText.getLocalBounds().height) / 2);
 
-    Text editorText("Editor Menu Keybindings:\nLeft Click (M1)- Edit Grid Element\nRight Click (M2)- Pan Grid View\n"
-        "Scroll Wheel Up/Down- Zoom In/Out on Pixel\nEnter- Save Map to File\nEscape- Return to Debug Menu\n", font, 16);
+    // Add this line before creating the sf::Text objects in the code
+    const int editorTextSize = 18; // Choose the desired size
+
+    // Replace the existing "editorText" definition with the following
+    sf::Text editorText("Editor Keybindings:\n\nLeft Click (M1)- Edit Grid Element\nRight Click (M2)- Pan Grid View\n"
+        "Scroll Wheel Up/Down- Zoom In/Out\nEnter- Save Map to File\nEscape- Return to Debug Menu\n", font, editorTextSize);
     editorText.setOrigin(editorText.getLocalBounds().width / 2.0, editorText.getLocalBounds().height / 2.0);
-    editorText.setFillColor(Color::White);
-    editorText.setPosition(editorText.getLocalBounds().width - 70, editorText.getLocalBounds().height - 30);
+    editorText.setFillColor(sf::Color::White);
+    editorText.setPosition(editorText.getLocalBounds().width - 50, editorText.getLocalBounds().height - 70);
+
+    // Make the editorText bold
+    editorText.setStyle(sf::Text::Bold);
 
     const float minCameraY = window.getSize().y - timerBoxHeight - 20;
 
@@ -165,6 +172,7 @@ void Player::editBoard(RenderWindow& window, Font& font)
                     else if (chooseAlgorithmArea.contains(coords))
                     {
                         // Show the algorithm selection window
+                        isAlgorithmSelectionWindowOpen = true;
                         RenderWindow algorithmSelectionWindow(VideoMode(200, 100), "Choose Algorithm", Style::Titlebar | Style::Close);
                         algorithmSelectionWindow.setPosition(getCenteredPosition(window, Vector2u(200, 100)));
                         algorithmSelectionWindow.setFramerateLimit(60);
@@ -189,7 +197,7 @@ void Player::editBoard(RenderWindow& window, Font& font)
                                         {
                                             cout << "Breadth-first search chosen" << endl;
                                             selectedAlgorithm = PathfindingAlgorithm::BreadthFirstSearch;
-        
+
                                             algorithmSelectionWindow.close();
                                         }
                                         // Check if Option 2 is clicked
@@ -198,7 +206,7 @@ void Player::editBoard(RenderWindow& window, Font& font)
                                         {
                                             cout << "Depth-first search chosen" << endl;
                                             selectedAlgorithm = PathfindingAlgorithm::DepthFirstSearch;
-                        
+
                                             algorithmSelectionWindow.close();
                                         }
                                     }
@@ -233,6 +241,12 @@ void Player::editBoard(RenderWindow& window, Font& font)
                                 algorithmSelectionWindow.display();
                             }
                         }
+                        if (selectedAlgorithm == PathfindingAlgorithm::BreadthFirstSearch || selectedAlgorithm == PathfindingAlgorithm::DepthFirstSearch)
+                        {
+                            cout << "Algorithm selected: " << (selectedAlgorithm == PathfindingAlgorithm::BreadthFirstSearch ? "Breadth-first search" : "Depth-first search") << endl;
+                        }
+
+                        isAlgorithmSelectionWindowOpen = false;
                     }
                     window.setView(camera);
                 }
@@ -294,7 +308,7 @@ void Player::editBoard(RenderWindow& window, Font& font)
         }
 
         deltaTime = clock.restart().asSeconds();
-        if (isTimerRunning)
+        if (!isAlgorithmSelectionWindowOpen && isTimerRunning)
         {
             timer -= deltaTime;
             timerText.setString("Time left: " + std::to_string(static_cast<int>(timer)) + " seconds");
@@ -303,6 +317,7 @@ void Player::editBoard(RenderWindow& window, Font& font)
             {
                 isTimerRunning = false;
                 timer = 30.0f;
+                timerText.setString("Time left: " + std::to_string(static_cast<int>(timer)) + " seconds");
             }
         }
 

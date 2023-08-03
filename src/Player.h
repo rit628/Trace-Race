@@ -7,6 +7,7 @@
 enum class PathfindingAlgorithm {
     BreadthFirstSearch,
     DepthFirstSearch,
+    None
 };
 
 class Player
