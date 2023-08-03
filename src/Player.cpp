@@ -1,4 +1,10 @@
 #include "Player.h"
+#include <SFML/System.hpp>
+#include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
+#include <string>
+#include <SFML/Window/Keyboard.hpp>
+#include <iostream>
 
 using namespace std;
 using namespace sf;
@@ -55,7 +61,6 @@ void Player::editBoard(RenderWindow& window, Font& font)
     Vector2f m1;
     Vector2f coords;
     string fileName;
-
     const int buttonWidth = 120;
     const int buttonHeight = 30;
     float deltaTime;
@@ -142,7 +147,6 @@ void Player::editBoard(RenderWindow& window, Font& font)
                         tileHover.y = floor(coords.y/board.tileDim);
                         tileStack.push_back(tileHover);
                         onClick(tileHover);
-
                         window.setView(window.getDefaultView());
                         coords = window.mapPixelToCoords(Vector2i(event.mouseButton.x, event.mouseButton.y));
                         sf::Vector2f buttonPosition = clearGridButton.getPosition();
@@ -189,6 +193,7 @@ void Player::editBoard(RenderWindow& window, Font& font)
                     {
                         tileStack.clear();
                         editing = false;
+                                           
                     }
 
                     else if (event.mouseButton.button == Mouse::Right)

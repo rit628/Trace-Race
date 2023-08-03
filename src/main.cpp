@@ -14,6 +14,8 @@ int main(int argc, char const *argv[])
     Tile::loadTextures();
     Font font;
     font.loadFromFile("files/font.ttf");
+    unsigned int monitorWidth = VideoMode::getDesktopMode().width;
+    unsigned int monitorHeight = VideoMode::getDesktopMode().height;
     unsigned int numRows = 10;
     unsigned int numCols = 10;
     string fileName = "map";

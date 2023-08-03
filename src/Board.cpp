@@ -1,7 +1,12 @@
 #include "Board.h"
+#include "Tile.h" 
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 using namespace sf;
+
+default_random_engine Board::gen;
 
 void Board::build(unsigned int numRows, unsigned int numCols)
 {
@@ -16,6 +21,14 @@ void Board::build(unsigned int numRows, unsigned int numCols)
         for (int j = 0; j < numCols; j++)
         {
             temp.push_back(new Tile((tileDim*j), (tileDim*i), id));
+            if (j > 0)
+            {
+                temp.at(j)->addNeighbor(temp.at(j-1));
+            }
+            if (i > 0)
+            {
+                temp.at(j)->addNeighbor(this->tiles.at(i-1).at(j));
+            }         
             id++;
         }
         this->tiles.push_back(temp);
@@ -37,10 +50,10 @@ void Board::build(string fileName)
     bool isWall;
     unsigned int x;
     unsigned int y;
-    for (int i = 0; i < numCols; i++)
+    for (int i = 0; i < numRows; i++)
     {
         temp.clear();
-        for (int j = 0; j < numRows; j++)
+        for (int j = 0; j < numCols; j++)
         {
             file >> buff;
             id = stoi(buff.substr(0, buff.find(',')));
@@ -57,13 +70,14 @@ void Board::build(string fileName)
     
 }
 
-void Board::reset()
+void Board::resetTiles(bool isWall)
 {
-    for (auto row : tiles)
+    for (auto& row : tiles)
     {
-        for (auto tile : row)
+        for (auto& tile : row)
         {
-            delete tile;
+            tile->isWall = isWall;
+            tile->flip();
         }
     }
 }
@@ -109,6 +123,7 @@ void Board::writeToFile(string fileName)
         }
         
     }
+    
 }
 
 void Board::generate(unsigned int numRows, unsigned int numCols)
@@ -165,4 +180,5 @@ void Board::generate(unsigned int numRows, unsigned int numCols)
             }
         }
     }
+
 }
