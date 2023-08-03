@@ -20,6 +20,7 @@ class Board : public sf::Drawable
         void build(unsigned int numCols, unsigned int numRows);
         void build(std::string fileName);
         void reset();
+        void resetTiles(bool isWall);
         void draw(sf::RenderTarget& target, sf::RenderStates states) const;
         void updateTile(unsigned int row, unsigned int col);
         void writeToFile(std::string fileName);

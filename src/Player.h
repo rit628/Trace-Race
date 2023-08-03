@@ -18,5 +18,6 @@ class Player
         void buildBoard(unsigned int numRows, unsigned int numCols);
         void buildBoard(std::string fileName);
         void editBoard(sf::RenderWindow& window, sf::Font& font);
+        void resetBoard(); // Function to reset the board
         std::string getFileName(sf::RenderWindow& window, sf::Font& font);
 };
