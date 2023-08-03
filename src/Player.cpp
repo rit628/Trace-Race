@@ -45,6 +45,7 @@ void Player::resetBoard(bool wall)
     this->board.resetTiles(wall);
 }
 
+
 void Player::editBoard(RenderWindow& window, Font& font)
 {
 //    sf::Vector2i screenCenter(sf::VideoMode::getDesktopMode().width / 2, sf::VideoMode::getDesktopMode().height / 2);

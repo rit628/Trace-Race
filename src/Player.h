@@ -28,4 +28,6 @@ class Player
         void resetBoard(bool wall = false); // Function to reset the board
         void editBoard(sf::RenderWindow& window, sf::Font& font);
         std::string getFileName(sf::RenderWindow& window, sf::Font& font);
+        void runAlgorithmSelectionWindow();
+
 };
