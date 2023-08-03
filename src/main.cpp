@@ -11,35 +11,41 @@
 using namespace std;
 using namespace sf;
 
-string querySelectorDEBUG(RenderWindow& window, Font& font, string query);
+string querySelectorDEBUG(RenderWindow& window, Font& font, string query, string imagePath);
 
 int main(int argc, char const *argv[])
 {
     Tile::loadTextures();
     Font font;
     font.loadFromFile("files/font.ttf");
-//    unsigned int monitorWidth = VideoMode::getDesktopMode().width;
-//    unsigned int monitorHeight = VideoMode::getDesktopMode().height;
+    //    unsigned int monitorWidth = VideoMode::getDesktopMode().width;
+    //    unsigned int monitorHeight = VideoMode::getDesktopMode().height;
     unsigned int numRows = 10;
     unsigned int numCols = 10;
     string fileName = "map";
     string dims;
 
-    // REMOVE
-    cout << "change" << endl;
+    // load menu textures
     sf::Texture mainMenuTexture;
     mainMenuTexture.loadFromFile("files/images/main_menu.png");
+
+    sf::Texture dimensionMenuTexture;
+    mainMenuTexture.loadFromFile("files/images/main_menu.png");
+
+    sf::Texture loadMenuTexture;
+    mainMenuTexture.loadFromFile("files/images/main_menu.png");
+
     RenderWindow window(VideoMode(mainMenuTexture.getSize().x, mainMenuTexture.getSize().y), "Trace Race", Style::Default);
 
-    // Set the initial window position to the center of the screen
-//    sf::Vector2i screenCenter(monitorWidth / 2, monitorHeight / 2);
-//    sf::Vector2i windowPosition(screenCenter.x - window.getSize().x / 2, screenCenter.y - window.getSize().y / 2);
-//    window.setPosition(windowPosition);
+        // Set the initial window position to the center of the screen
+    //    sf::Vector2i screenCenter(monitorWidth / 2, monitorHeight / 2);
+    //    sf::Vector2i windowPosition(screenCenter.x - window.getSize().x / 2, screenCenter.y - window.getSize().y / 2);
+    //    window.setPosition(windowPosition);
 
     window.setFramerateLimit(360);
 
       // music player
-      MusicPlayer backgroundMusic;
+    MusicPlayer backgroundMusic;
 
 
 
@@ -53,8 +59,7 @@ int main(int argc, char const *argv[])
 
     ButtonMaker newGameButton(0.0f, 222.0f, 315.0f, 52.0f);
     ButtonMaker loadGameButton(0.0f, 319.0f, 315.0f, 52.0f);
-
-
+    ButtonMaker exitGameButton(477.0f, 477.0f, 106.0f, 36.0f);
 
     Player* p1 = new Player("Debug");
 
@@ -65,7 +70,7 @@ int main(int argc, char const *argv[])
         Vector2i  mousePosition = Mouse::getPosition(window);
         // DEBUG SECTION
        // MOUSE DEBUGGER
-        cout << "x: "<< mousePosition.x << " y: "<< mousePosition.y << endl;
+//        cout << "x: "<< mousePosition.x << " y: "<< mousePosition.y << endl;
 
         window.clear(Color::Blue);
 
@@ -137,7 +142,7 @@ int main(int argc, char const *argv[])
                                         // d = manually enter dimensions
                                     else if (inputEvent.key.code == Keyboard::D) {
                                         selectorType.pollEvent(event);
-                                        dims = querySelectorDEBUG(selectorType, font, "Enter Dimensions (RxC): ");
+                                        dims = querySelectorDEBUG(selectorType, font, "Enter Dimensions (RxC): ", "");
                                         numRows = stoi(dims.substr(0, dims.find('x')));
                                         numCols = stoi(dims.substr(dims.find('x')+1));
                                         isManualInputClosed = true;
@@ -239,14 +244,20 @@ int main(int argc, char const *argv[])
                         p1->editBoard(window, font);
                         window.setView(window.getDefaultView());
                     }
+                    // pull load game menu
                     if (loadGameButton.isClicked(mousePosition))
                     {
                         // Enter edit mode for player 1 based on file
                         window.pollEvent(event);
-                        fileName = querySelectorDEBUG(window, font, "Enter File Name (No Extension): ");
+                        fileName = querySelectorDEBUG(window, font, "Enter File Name (No Extension): ", "");
                         p1->buildBoard(fileName);
                         p1->editBoard(window, font);
                         window.setView(window.getDefaultView());
+                    }
+                    // exit game
+                    if (exitGameButton.isClicked(mousePosition)){
+                        window.close();
+
                     }
                     break;
             }
@@ -259,7 +270,7 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
-string querySelectorDEBUG(RenderWindow& window, Font& font, string query)
+string querySelectorDEBUG(RenderWindow& window, Font& font, string query, string imagePath)
 {
     // In the final version this would be split into two routines
     // Dimension selector would have a gui showing an interactive matrix (similar to the table insert function in ms word)
