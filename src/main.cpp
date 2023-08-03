@@ -11,7 +11,7 @@
 using namespace std;
 using namespace sf;
 
-string querySelectorDEBUG(RenderWindow& window, Font& font, string query, string imagePath);
+string querySelectorDEBUG(RenderWindow& window, Font& font, string query, sf::Sprite backgroundSprite);
 
 int main(int argc, char const *argv[])
 {
@@ -30,10 +30,24 @@ int main(int argc, char const *argv[])
     mainMenuTexture.loadFromFile("files/images/main_menu.png");
 
     sf::Texture dimensionMenuTexture;
-    mainMenuTexture.loadFromFile("files/images/main_menu.png");
+    dimensionMenuTexture.loadFromFile("files/images/dimension_menu.png");
 
     sf::Texture loadMenuTexture;
-    mainMenuTexture.loadFromFile("files/images/main_menu.png");
+    loadMenuTexture.loadFromFile("files/images/load_menu.png");
+
+    sf::Texture manualMenuTexture;
+    manualMenuTexture.loadFromFile("files/images/manual_menu.png");
+
+    // create sprites
+    sf::Sprite mainMenuSprite;
+    sf::Sprite dimensionMenuSprite;
+    sf::Sprite loadMenuSprite;
+    sf::Sprite manualMenuSprite;
+
+    mainMenuSprite.setTexture(mainMenuTexture);
+    dimensionMenuSprite.setTexture(dimensionMenuTexture);
+    loadMenuSprite.setTexture(loadMenuTexture);
+    manualMenuSprite.setTexture(manualMenuTexture);
 
     RenderWindow window(VideoMode(mainMenuTexture.getSize().x, mainMenuTexture.getSize().y), "Trace Race", Style::Default);
 
@@ -47,13 +61,10 @@ int main(int argc, char const *argv[])
       // music player
     MusicPlayer backgroundMusic;
 
-
-
-
     // load background / adjust scaling
     float scaleX = (float)window.getSize().x / mainMenuTexture.getSize().x;
     float scaleY = (float)window.getSize().y / mainMenuTexture.getSize().y;
-    sf::Sprite mainMenuSprite;
+
     mainMenuSprite.setTexture(mainMenuTexture);
     mainMenuSprite.setScale(scaleX, scaleY);
 
@@ -142,7 +153,7 @@ int main(int argc, char const *argv[])
                                         // d = manually enter dimensions
                                     else if (inputEvent.key.code == Keyboard::D) {
                                         selectorType.pollEvent(event);
-                                        dims = querySelectorDEBUG(selectorType, font, "Enter Dimensions (RxC): ", "");
+                                        dims = querySelectorDEBUG(selectorType, font, "Enter Dimensions (RxC): \n           ", manualMenuSprite);
                                         numRows = stoi(dims.substr(0, dims.find('x')));
                                         numCols = stoi(dims.substr(dims.find('x')+1));
                                         isManualInputClosed = true;
@@ -150,8 +161,8 @@ int main(int argc, char const *argv[])
                                     }
                                 }
                             }
-                            selectorType.clear(Color::White);
-                            selectorType.draw(inputChoice);
+//                            selectorType.clear(Color::White);
+                            selectorType.draw(dimensionMenuSprite);
                             selectorType.display();
                         }
                         // create dimensional matrix selector
@@ -249,7 +260,7 @@ int main(int argc, char const *argv[])
                     {
                         // Enter edit mode for player 1 based on file
                         window.pollEvent(event);
-                        fileName = querySelectorDEBUG(window, font, "Enter File Name (No Extension): ", "");
+                        fileName = querySelectorDEBUG(window, font, "Enter File Name (No Extension): \n          ", loadMenuSprite);
                         p1->buildBoard(fileName);
                         p1->editBoard(window, font);
                         window.setView(window.getDefaultView());
@@ -270,7 +281,7 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
-string querySelectorDEBUG(RenderWindow& window, Font& font, string query, string imagePath)
+string querySelectorDEBUG(RenderWindow& window, Font& font, string query, sf::Sprite backgroundSprite)
 {
     // In the final version this would be split into two routines
     // Dimension selector would have a gui showing an interactive matrix (similar to the table insert function in ms word)
@@ -279,7 +290,7 @@ string querySelectorDEBUG(RenderWindow& window, Font& font, string query, string
     Vector2f winCenter = ((Vector2f)window.getSize())/2.0f;
     Text fileSelect(query, font, 24);
     fileSelect.setOrigin(fileSelect.getLocalBounds().width/2.0, fileSelect.getLocalBounds().height/2.0);
-    fileSelect.setFillColor(Color::Black);
+    fileSelect.setFillColor(Color::White);
     fileSelect.setPosition(winCenter);
     string input;
     while (window.isOpen())
@@ -314,6 +325,7 @@ string querySelectorDEBUG(RenderWindow& window, Font& font, string query, string
                 break;
             }
         }
+        window.draw(backgroundSprite);
         window.draw(fileSelect);
         window.display();
     }
