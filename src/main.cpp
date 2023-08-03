@@ -52,6 +52,8 @@ int main(int argc, char const *argv[])
     mainMenuSprite.setScale(scaleX, scaleY);
 
     ButtonMaker newGameButton(0.0f, 222.0f, 315.0f, 52.0f);
+    ButtonMaker loadGameButton(0.0f, 319.0f, 315.0f, 52.0f);
+
 
 
     Player* p1 = new Player("Debug");
@@ -63,7 +65,7 @@ int main(int argc, char const *argv[])
         Vector2i  mousePosition = Mouse::getPosition(window);
         // DEBUG SECTION
        // MOUSE DEBUGGER
-//        cout << "x: "<< mousePosition.x << " y: "<< mousePosition.y << endl;
+        cout << "x: "<< mousePosition.x << " y: "<< mousePosition.y << endl;
 
         window.clear(Color::Blue);
 
@@ -237,7 +239,7 @@ int main(int argc, char const *argv[])
                         p1->editBoard(window, font);
                         window.setView(window.getDefaultView());
                     }
-                    else if (event.key.code == Keyboard::F)
+                    if (loadGameButton.isClicked(mousePosition))
                     {
                         // Enter edit mode for player 1 based on file
                         window.pollEvent(event);
