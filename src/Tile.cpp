@@ -41,9 +41,3 @@ void Tile::flip()
         this->sprites.at(0).setTexture(path);
     }
 }
-
-void Tile::addNeighbor(Tile* tile)
-{
-    this->neighbors.push_back(tile);
-    tile->neighbors.push_back(this);
-}
