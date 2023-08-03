@@ -163,12 +163,6 @@ int main(int argc, char const *argv[])
                                         case Event::Closed:
                                             matrixSelector.close();
                                             break;
-                                            // mute with m
-                                        case Event::KeyPressed:
-                                            if (event.key.code == Keyboard::M) {
-                                                backgroundMusic.toggleMute();
-                                            }
-                                            break;
 
                                         case Event::MouseButtonPressed:
                                             // when size is selected, close menu
@@ -177,6 +171,15 @@ int main(int argc, char const *argv[])
                                                 numCols = static_cast<int>(selectorEvent.mouseButton.x / cellWidth) + 1;
                                                 matrixSelector.close();
                                                 isMatrixSelectorClosed = true;
+                                            }
+                                            break;
+                                    }
+                                    //TODO: MAKE MUSIC MUTABLE EVERYWHERE
+                                    switch (event.type){
+                                        // mute with m
+                                        case Event::KeyPressed:
+                                            if (event.key.code == Keyboard::M) {
+                                                backgroundMusic.toggleMute();
                                             }
                                             break;
                                     }
