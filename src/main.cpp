@@ -51,7 +51,8 @@ int main(int argc, char const *argv[])
 
         // DEBUG SECTION
         Vector2i  mousePosition = Mouse::getPosition(window);
-        bool isMatrixSelectorOpen = false;
+        bool isMatrixSelectorClosed = false;
+        bool isManualInputClosed = false;
         // MOUSE DEBUGGER
 //        cout << "x: "<< mousePosition.x << " y: "<< mousePosition.y << endl;
 
@@ -96,7 +97,7 @@ int main(int argc, char const *argv[])
                         inputChoice.setOrigin(inputChoice.getLocalBounds().width/2.0, inputChoice.getLocalBounds().height/2.0);
                         inputChoice.setPosition(winCenter);
 
-                        bool matrixInput = false;
+                        bool isMatrixInput = false;
 
                         while (selectorType.isOpen()) {
                             Event inputEvent;
@@ -107,7 +108,7 @@ int main(int argc, char const *argv[])
                                 // f = select matrix input
                                 if (inputEvent.type == Event::KeyPressed) {
                                     if (inputEvent.key.code == Keyboard::F) {
-                                        matrixInput = true;
+                                        isMatrixInput = true;
                                         selectorType.close();
                                     }
                                         // d = manually enter dimensions
@@ -116,7 +117,9 @@ int main(int argc, char const *argv[])
                                         dims = querySelectorDEBUG(selectorType, font, "Enter Dimensions (RxC): ");
                                         numRows = stoi(dims.substr(0, dims.find('x')));
                                         numCols = stoi(dims.substr(dims.find('x')+1));
+                                        isManualInputClosed = true;
                                         selectorType.close();
+
                                     }
                                 }
                             }
@@ -125,7 +128,7 @@ int main(int argc, char const *argv[])
                             selectorType.display();
                         }
                         // create dimensional matrix selector
-                        if (matrixInput) {
+                        if (isMatrixInput) {
                             // Matrix Selector Section
                             RenderWindow matrixSelector(VideoMode(600, 600), "Select Race Dimensions [MATRIX INPUT]", Style::Close);
                             unsigned int maxRows = 50;
@@ -145,8 +148,7 @@ int main(int argc, char const *argv[])
                                                 numRows = static_cast<int>(selectorEvent.mouseButton.y / cellHeight) + 1;
                                                 numCols = static_cast<int>(selectorEvent.mouseButton.x / cellWidth) + 1;
                                                 matrixSelector.close();
-                                                isMatrixSelectorOpen = true;
-                                                cout << "matrix closed" << endl;
+                                                isMatrixSelectorClosed = true;
                                             }
                                             break;
                                     }
@@ -195,9 +197,9 @@ int main(int argc, char const *argv[])
                             // end matrix selector
                         }
                     }
-                    if (isMatrixSelectorOpen)
+                    // run game (starting with Player 1)
+                    if (isMatrixSelectorClosed or isManualInputClosed)
                     {
-
                         // Enter edit mode for player 1
                         p1->buildBoard(numRows, numCols);
                         p1->editBoard(window, font);
@@ -214,7 +216,6 @@ int main(int argc, char const *argv[])
                     }
                     break;
             }
-            
         }
         window.draw(mainMenuSprite);
         window.display();
