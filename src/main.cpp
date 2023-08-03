@@ -20,7 +20,12 @@ int main(int argc, char const *argv[])
     string fileName = "map";
     string dims;
 
-    RenderWindow window(VideoMode(monitorWidth/2, monitorHeight/2), "Trace Race", Style::Default);
+    RenderWindow window(VideoMode(monitorWidth / 2, monitorHeight / 2), "Trace Race", Style::Default);
+
+    // Set the initial window position to the center of the screen
+    sf::Vector2i screenCenter(monitorWidth / 2, monitorHeight / 2);
+    sf::Vector2i windowPosition(screenCenter.x - window.getSize().x / 2, screenCenter.y - window.getSize().y / 2);
+    window.setPosition(windowPosition);
     window.setFramerateLimit(360);
 
     Vector2f winCenter = ((Vector2f)window.getSize())/2.0f;

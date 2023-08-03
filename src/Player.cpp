@@ -1,4 +1,10 @@
 #include "Player.h"
+#include <SFML/System.hpp>
+#include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
+#include <string>
+#include <SFML/Window/Keyboard.hpp>
+#include <iostream>
 
 using namespace std;
 using namespace sf;
@@ -28,22 +34,70 @@ void Player::buildBoard(string fileName)
     this->board.build(fileName);
 }
 
+void Player::resetBoard()
+{
+    this->board.reset();
+}
+
 void Player::editBoard(RenderWindow& window, Font& font)
 {
-    // Needs updated UI
+    sf::Vector2i screenCenter(sf::VideoMode::getDesktopMode().width / 2, sf::VideoMode::getDesktopMode().height / 2);
+    sf::Vector2i windowPosition(screenCenter.x - window.getSize().x / 2, screenCenter.y - window.getSize().y / 2);
+    window.setPosition(windowPosition);
     bool panning = false;
     bool editing = false;
+    bool isClearButtonClicked = false;
+    bool isChooseAlgorithmButtonClicked = false;
+    const std::vector<std::string> dropdownOptions = { "Option 1", "Option 2" };
+    int selectedOption = -1; // Default to no option selected
     Vector2i pixel;
     Vector2i tileHover;
     vector<Vector2i> tileStack;
-    View camera(FloatRect(0, 0, 250, 250));
-    camera.setCenter(this->board.numCols*16, this->board.numRows*16);
-    camera.setViewport(FloatRect(0, .25, 1, 1));
+    sf::View camera(sf::FloatRect(0, 0, 250, 250));
+    camera.setCenter(static_cast<float>(this->board.numCols * 16), static_cast<float>(this->board.numRows * 16));
+    float topLimit = 0.22;
+    float bottomLimit = 0.90;
+    camera.setViewport(sf::FloatRect(0, topLimit, 1, bottomLimit - topLimit));
     window.setView(camera);
     Vector2f m0;
     Vector2f m1;
     Vector2f coords;
     string fileName;
+    const int buttonWidth = 120;
+    const int buttonHeight = 30;
+    float deltaTime;
+
+    sf::RectangleShape clearGridButton(sf::Vector2f(buttonWidth, buttonHeight));
+    clearGridButton.setFillColor(sf::Color(66, 135, 245));
+    clearGridButton.setPosition(10, 10); // Moved the button down by 10 units.
+
+    sf::Text clearGridText("Clear Grid", font, 18);
+    clearGridText.setFillColor(sf::Color::White);
+    clearGridText.setPosition(clearGridButton.getPosition().x + (buttonWidth - clearGridText.getLocalBounds().width) / 2,
+                              clearGridButton.getPosition().y + (buttonHeight - clearGridText.getLocalBounds().height) / 2);
+
+    sf::RectangleShape chooseAlgorithmButton(sf::Vector2f(buttonWidth + 60, buttonHeight));
+    chooseAlgorithmButton.setFillColor(sf::Color(66, 135, 245));
+    chooseAlgorithmButton.setPosition(window.getSize().x - buttonWidth - 80, clearGridButton.getPosition().y); // Align the "Choose Algorithm" button with the "Clear Grid" button
+
+    sf::Text chooseAlgorithmText("Choose Algorithm", font, 18);
+    chooseAlgorithmText.setFillColor(sf::Color::White);
+    chooseAlgorithmText.setPosition(chooseAlgorithmButton.getPosition().x + 30 + (buttonWidth - (chooseAlgorithmText.getLocalBounds().width)) / 2,
+                                    chooseAlgorithmButton.getPosition().y + (buttonHeight - chooseAlgorithmText.getLocalBounds().height) / 2);
+    
+    float timer = 30.0f;
+    bool isTimerRunning = true;
+    sf::Clock clock;
+    const int timerBoxWidth = 240;
+    const int timerBoxHeight = 30;
+    sf::RectangleShape timerBox(sf::Vector2f(timerBoxWidth, timerBoxHeight));
+    timerBox.setFillColor(sf::Color(66, 135, 245));
+    timerBox.setPosition((window.getSize().x - timerBoxWidth) / 2, window.getSize().y - timerBoxHeight - 10);
+
+    sf::Text timerText("Time left: " + std::to_string(static_cast<int>(timer)) + " seconds", font, 18);
+    timerText.setFillColor(sf::Color::White);
+    timerText.setPosition(timerBox.getPosition().x + (timerBoxWidth - timerText.getLocalBounds().width) / 2,
+                          timerBox.getPosition().y + (timerBoxHeight - timerText.getLocalBounds().height) / 2);
 
     Text editorText("Editor Menu Keybindings:\nLeft Click (M1)- Edit Grid Element\nRight Click (M2)- Pan Grid View\n"
                     "Scroll Wheel Up/Down- Zoom In/Out on Hovered Pixel\nEnter- Save Map to File\nEscape- Return to Debug Menu\n", font, 18);
@@ -51,9 +105,13 @@ void Player::editBoard(RenderWindow& window, Font& font)
     editorText.setFillColor(Color::White);
     editorText.setPosition(editorText.getLocalBounds().width, editorText.getLocalBounds().height);
 
+    const float minCameraY = window.getSize().y - timerBoxHeight - 20;
+    const int dropdownButtonHeight = 30;
+    bool isDropdownVisible = false;
+
     while (window.isOpen())
     {
-        window.clear(Color::Black);
+        window.clear(sf::Color(173, 216, 230));
         Event event;
         while (window.pollEvent(event))
         {
@@ -91,6 +149,36 @@ void Player::editBoard(RenderWindow& window, Font& font)
                         tileHover.y = floor(coords.y/board.tileDim);
                         tileStack.push_back(tileHover);
                         onClick(tileHover);
+                        sf::Vector2f buttonPosition = clearGridButton.getPosition();
+                        sf::FloatRect clearGridArea(clearGridText.getGlobalBounds());
+                        sf::FloatRect chooseAlgorithmArea(chooseAlgorithmButton.getPosition(), sf::Vector2f(buttonWidth + 60, buttonHeight));
+                        if (clearGridArea.contains(coords))
+                        {
+                            isClearButtonClicked = true;
+                        }
+                        else if (chooseAlgorithmArea.contains(coords))
+                        {
+                            isChooseAlgorithmButtonClicked = true;
+
+                            if (!isDropdownVisible)
+                            {
+                                isDropdownVisible = true;
+                            }
+                            else
+                            {
+                                // Process the selected option here (you can use 'selectedOption' variable)
+                                for (size_t i = 0; i < dropdownOptions.size(); ++i)
+                                {
+                                    sf::FloatRect optionArea(chooseAlgorithmButton.getPosition().x, chooseAlgorithmButton.getPosition().y + dropdownButtonHeight + i * buttonHeight, buttonWidth + 60, buttonHeight);
+                                    if (optionArea.contains(coords))
+                                    {
+                                        selectedOption = static_cast<int>(i);
+                                        std::cout << "Selected Option: " << dropdownOptions[selectedOption] << std::endl; // For debugging
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
                     else if (event.mouseButton.button == Mouse::Right)
                     {
@@ -103,7 +191,12 @@ void Player::editBoard(RenderWindow& window, Font& font)
                     if (event.mouseButton.button == Mouse::Left)
                     {
                         tileStack.clear();
-                        editing = false;                    
+                        editing = false;
+
+                        isClearButtonClicked = false;
+                        isChooseAlgorithmButtonClicked = false;
+                        isDropdownVisible = false;
+                                           
                     }
 
                     else if (event.mouseButton.button == Mouse::Right)
@@ -147,11 +240,45 @@ void Player::editBoard(RenderWindow& window, Font& font)
                         window.setView(camera);
                     }
                     break;
-                    
             }
         }
+
+        deltaTime = clock.restart().asSeconds();
+        if (isTimerRunning)
+        {
+            timer -= deltaTime;
+            timerText.setString("Time left: " + std::to_string(static_cast<int>(timer)) + " seconds");
+
+            if (timer <= 0.0f)
+            {
+                isTimerRunning = false;
+                timer = 30.0f;
+            }
+        }
+        
+        if (isDropdownVisible)
+        {
+            sf::RectangleShape dropdownBackground(sf::Vector2f(buttonWidth + 60, buttonHeight * dropdownOptions.size()));
+            dropdownBackground.setFillColor(sf::Color(66, 135, 245));
+            dropdownBackground.setPosition(chooseAlgorithmButton.getPosition().x, chooseAlgorithmButton.getPosition().y + dropdownButtonHeight);
+
+            for (size_t i = 0; i < dropdownOptions.size(); ++i)
+            {
+                sf::Text optionText(dropdownOptions[i], font, 18);
+                optionText.setFillColor(sf::Color::White);
+                optionText.setPosition(dropdownBackground.getPosition().x + 30, dropdownBackground.getPosition().y + i * buttonHeight);
+                window.draw(optionText);
+            }
+        }
+
         window.setView(window.getDefaultView());
         window.draw(editorText);
+        window.draw(clearGridButton);
+        window.draw(clearGridText);
+        window.draw(chooseAlgorithmButton);
+        window.draw(chooseAlgorithmText);
+        window.draw(timerBox);
+        window.draw(timerText);
         window.setView(camera);
         window.draw(this->board);
         window.display();
@@ -171,7 +298,7 @@ string Player::getFileName(RenderWindow& window, Font& font)
     string input;
     while (window.isOpen())
     {
-        window.clear(Color::Cyan);
+        window.clear(sf::Color(173, 216, 230));
         Event event;
         while (window.pollEvent(event))
         {

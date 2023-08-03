@@ -1,4 +1,7 @@
 #include "Board.h"
+#include "Tile.h" 
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 using namespace sf;
@@ -65,6 +68,18 @@ void Board::build(string fileName)
         this->tiles.push_back(temp);
     }
     
+}
+
+void Board::resetTiles(bool isWall)
+{
+    for (auto& row : tiles)
+    {
+        for (auto& tile : row)
+        {
+            tile->isWall = isWall;
+            tile->flip();
+        }
+    }
 }
 
 void Board::reset()
