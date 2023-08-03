@@ -1,4 +1,7 @@
 #include "Board.h"
+#include "Tile.h" 
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 using namespace sf;
@@ -57,16 +60,22 @@ void Board::build(string fileName)
     
 }
 
-void Board::reset()
+void Board::resetTiles(bool isWall)
 {
-    for (auto row : tiles)
+    for (auto& row : tiles)
     {
-        for (auto tile : row)
+        for (auto& tile : row)
         {
-            delete tile;
+            tile->isWall = isWall;
+            tile->flip();
         }
     }
-    this->tiles.clear();
+}
+
+
+void Board::reset()
+{
+    resetTiles(false); // Set false to reset the tiles as paths, change it to true if you want to reset them as walls
 }
 
 void Board::draw(RenderTarget& target, RenderStates states) const

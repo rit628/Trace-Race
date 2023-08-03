@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <SFML/Window/Keyboard.hpp>
+#include <iostream>
 
 Player::Player(std::string name) : name(name) {}
 
@@ -14,8 +15,8 @@ Player::~Player()
 
 void Player::onClick(sf::Vector2f pos)
 {
-    unsigned int col = floor(pos.x / this->board.tileDim);
-    unsigned int row = floor(pos.y / this->board.tileDim);
+    unsigned int col = static_cast<unsigned int>(std::floor(pos.x / this->board.tileDim));
+    unsigned int row = static_cast<unsigned int>(std::floor(pos.y / this->board.tileDim));
     if ((col < this->board.numCols) && (row < this->board.numRows))
     {
         this->board.updateTile(row, col);
@@ -39,7 +40,6 @@ void Player::resetBoard()
 
 void Player::editBoard(sf::RenderWindow& window, sf::Font& font)
 {
-    // Set the initial window position
     sf::Vector2i screenCenter(sf::VideoMode::getDesktopMode().width / 2, sf::VideoMode::getDesktopMode().height / 2);
     sf::Vector2i windowPosition(screenCenter.x - window.getSize().x / 2, screenCenter.y - window.getSize().y / 2);
     window.setPosition(windowPosition);
@@ -47,15 +47,15 @@ void Player::editBoard(sf::RenderWindow& window, sf::Font& font)
     bool panning = false;
     bool isClearButtonClicked = false;
     bool isChooseAlgorithmButtonClicked = false;
+    const std::vector<std::string> dropdownOptions = { "Option 1", "Option 2" };
+    int selectedOption = -1; // Default to no option selected
 
-    // Create the camera view
     sf::View camera(sf::FloatRect(0, 0, 250, 250));
-    camera.setCenter(this->board.numCols * 16, this->board.numRows * 16);
+    camera.setCenter(static_cast<float>(this->board.numCols * 16), static_cast<float>(this->board.numRows * 16));
     float topLimit = 0.22;
     float bottomLimit = 0.90;
     camera.setViewport(sf::FloatRect(0, topLimit, 1, bottomLimit - topLimit));
 
-    // Set the camera view to the window
     window.setView(camera);
 
     sf::Vector2f m0;
@@ -68,7 +68,7 @@ void Player::editBoard(sf::RenderWindow& window, sf::Font& font)
 
     sf::RectangleShape clearGridButton(sf::Vector2f(buttonWidth, buttonHeight));
     clearGridButton.setFillColor(sf::Color(66, 135, 245));
-    clearGridButton.setPosition(10, 10);
+    clearGridButton.setPosition(10, 10); // Moved the button down by 10 units.
 
     sf::Text clearGridText("Clear Grid", font, 18);
     clearGridText.setFillColor(sf::Color::White);
@@ -77,7 +77,7 @@ void Player::editBoard(sf::RenderWindow& window, sf::Font& font)
 
     sf::RectangleShape chooseAlgorithmButton(sf::Vector2f(buttonWidth + 60, buttonHeight));
     chooseAlgorithmButton.setFillColor(sf::Color(66, 135, 245));
-    chooseAlgorithmButton.setPosition(window.getSize().x - buttonWidth - 80, 10);
+    chooseAlgorithmButton.setPosition(window.getSize().x - buttonWidth - 80, clearGridButton.getPosition().y); // Align the "Choose Algorithm" button with the "Clear Grid" button
 
     sf::Text chooseAlgorithmText("Choose Algorithm", font, 18);
     chooseAlgorithmText.setFillColor(sf::Color::White);
@@ -99,6 +99,8 @@ void Player::editBoard(sf::RenderWindow& window, sf::Font& font)
                           timerBox.getPosition().y + (timerBoxHeight - timerText.getLocalBounds().height) / 2);
 
     const float minCameraY = window.getSize().y - timerBoxHeight - 20;
+    const int dropdownButtonHeight = 30;
+    bool isDropdownVisible = false;
 
     while (window.isOpen())
     {
@@ -132,13 +134,36 @@ void Player::editBoard(sf::RenderWindow& window, sf::Font& font)
                     pixel = sf::Vector2i(event.mouseButton.x, event.mouseButton.y);
                     sf::Vector2f worldPos = window.mapPixelToCoords(pixel);
 
-                    if (clearGridButton.getGlobalBounds().contains(worldPos))
+                    sf::Vector2f buttonPosition = clearGridButton.getPosition();
+                    sf::FloatRect clearGridArea(clearGridText.getGlobalBounds());
+                    sf::FloatRect chooseAlgorithmArea(chooseAlgorithmButton.getPosition(), sf::Vector2f(buttonWidth + 60, buttonHeight));
+
+                    if (clearGridArea.contains(worldPos))
                     {
                         isClearButtonClicked = true;
                     }
-                    else if (chooseAlgorithmButton.getGlobalBounds().contains(worldPos))
+                    else if (chooseAlgorithmArea.contains(worldPos))
                     {
                         isChooseAlgorithmButtonClicked = true;
+
+                        if (!isDropdownVisible)
+                        {
+                            isDropdownVisible = true;
+                        }
+                        else
+                        {
+                            // Process the selected option here (you can use 'selectedOption' variable)
+                            for (size_t i = 0; i < dropdownOptions.size(); ++i)
+                            {
+                                sf::FloatRect optionArea(chooseAlgorithmButton.getPosition().x, chooseAlgorithmButton.getPosition().y + dropdownButtonHeight + i * buttonHeight, buttonWidth + 60, buttonHeight);
+                                if (optionArea.contains(worldPos))
+                                {
+                                    selectedOption = static_cast<int>(i);
+                                    std::cout << "Selected Option: " << dropdownOptions[selectedOption] << std::endl; // For debugging
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
                 else if (event.mouseButton.button == sf::Mouse::Right)
@@ -162,13 +187,20 @@ void Player::editBoard(sf::RenderWindow& window, sf::Font& font)
                     {
                         resetBoard();
                     }
-                    else if (!isChooseAlgorithmButtonClicked)
+                    else if (!isDropdownVisible)
                     {
-                        onClick(worldPos);
+                        // Check if the click is on the board and flip the tiles accordingly
+                        unsigned int col = static_cast<unsigned int>(std::floor(worldPos.x / this->board.tileDim));
+                        unsigned int row = static_cast<unsigned int>(std::floor(worldPos.y / this->board.tileDim));
+                        if ((col < this->board.numCols) && (row < this->board.numRows))
+                        {
+                            this->board.updateTile(row, col);
+                        }
                     }
 
                     isClearButtonClicked = false;
                     isChooseAlgorithmButtonClicked = false;
+                    isDropdownVisible = false;
                 }
                 break;
 
@@ -192,7 +224,7 @@ void Player::editBoard(sf::RenderWindow& window, sf::Font& font)
             case sf::Event::MouseWheelMoved:
                 if (!panning)
                 {
-                    float zoom = (event.mouseWheel.delta >= 0) ? .5 : 2;
+                    float zoom = (event.mouseWheel.delta >= 0) ? .5f : 2.f;
                     pixel = sf::Vector2i(event.mouseButton.x, event.mouseButton.y);
                     m0 = window.mapPixelToCoords(pixel);
                     camera.zoom(zoom);
@@ -218,11 +250,10 @@ void Player::editBoard(sf::RenderWindow& window, sf::Font& font)
             }
         }
 
-        // Draw elements on the screen
         window.setView(window.getDefaultView());
         sf::Text editorText("Editor Menu Keybindings:\nLeft Click (M1)- Edit Grid Element\nRight Click (M2)- Pan Grid View\n"
-                            "Scroll Wheel Up/Down- Zoom In/Out on Hovered Pixel\nEnter- Save Map to File\nEscape- Return to Debug Menu\n", font, 18);
-        editorText.setOrigin(editorText.getLocalBounds().width / 2.0, editorText.getLocalBounds().height / 2.0);
+            "Scroll Wheel Up/Down- Zoom In/Out on Hovered Pixel\nEnter- Save Map to File\nEscape- Return to Debug Menu\n", font, 18);
+        editorText.setOrigin(editorText.getLocalBounds().width / 2.0f, editorText.getLocalBounds().height / 2.0f);
         editorText.setFillColor(sf::Color::White);
         editorText.setPosition(editorText.getLocalBounds().width, editorText.getLocalBounds().height - 60);
 
@@ -231,6 +262,21 @@ void Player::editBoard(sf::RenderWindow& window, sf::Font& font)
         window.draw(clearGridText);
         window.draw(chooseAlgorithmButton);
         window.draw(chooseAlgorithmText);
+
+        if (isDropdownVisible)
+        {
+            sf::RectangleShape dropdownBackground(sf::Vector2f(buttonWidth + 60, buttonHeight * dropdownOptions.size()));
+            dropdownBackground.setFillColor(sf::Color(66, 135, 245));
+            dropdownBackground.setPosition(chooseAlgorithmButton.getPosition().x, chooseAlgorithmButton.getPosition().y + dropdownButtonHeight);
+
+            for (size_t i = 0; i < dropdownOptions.size(); ++i)
+            {
+                sf::Text optionText(dropdownOptions[i], font, 18);
+                optionText.setFillColor(sf::Color::White);
+                optionText.setPosition(dropdownBackground.getPosition().x + 30, dropdownBackground.getPosition().y + i * buttonHeight);
+                window.draw(optionText);
+            }
+        }
 
         window.draw(timerBox);
         window.draw(timerText);
@@ -243,16 +289,16 @@ void Player::editBoard(sf::RenderWindow& window, sf::Font& font)
 
 std::string Player::getFileName(sf::RenderWindow& window, sf::Font& font)
 {
-    sf::Vector2f winCenter = ((sf::Vector2f)window.getSize()) / 2.0f;
+    sf::Vector2f winCenter = static_cast<sf::Vector2f>(window.getSize()) / 2.0f;
     std::string query = "Enter File Name (No Extension): ";
     sf::Text fileSelect(query, font, 24);
-    fileSelect.setOrigin(fileSelect.getLocalBounds().width / 2.0, fileSelect.getLocalBounds().height / 2.0);
+    fileSelect.setOrigin(fileSelect.getLocalBounds().width / 2.0f, fileSelect.getLocalBounds().height / 2.0f);
     fileSelect.setFillColor(sf::Color::Black);
     fileSelect.setPosition(winCenter);
     std::string input;
     while (window.isOpen())
     {
-        window.clear(sf::Color(173, 216, 230)); // Light blue-green background
+        window.clear(sf::Color(173, 216, 230));
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -274,7 +320,7 @@ std::string Player::getFileName(sf::RenderWindow& window, sf::Font& font)
                 }
                 break;
             case sf::Event::TextEntered:
-                if (isalnum(static_cast<char>(event.text.unicode)))
+                if (std::isalnum(static_cast<char>(event.text.unicode)))
                 {
                     input += static_cast<char>(event.text.unicode);
                     fileSelect.setString(query + input);
