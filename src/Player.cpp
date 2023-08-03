@@ -9,7 +9,16 @@
 using namespace std;
 using namespace sf;
 
-Player::Player(string name) : name(name){}
+
+//checking if push works
+
+// Function to calculate the center position of a window relative to another window
+Vector2i getCenteredPosition(const Window& parent, const Vector2u& size) {
+    const Vector2i parentCenter(parent.getPosition().x + parent.getSize().x / 2, parent.getPosition().y + parent.getSize().y / 2);
+    return Vector2i(parentCenter.x - size.x / 2 + 50, parentCenter.y - size.y / 2);
+}
+
+Player::Player(string name) : name(name) {}
 
 Player::~Player()
 {
@@ -21,7 +30,7 @@ void Player::onClick(Vector2i pos)
     if ((pos.x < this->board.numCols) && (pos.y < this->board.numRows))
     {
         this->board.updateTile(pos.y, pos.x);
-    }   
+    }
 }
 
 void Player::buildBoard(unsigned int numRows, unsigned int numCols)
@@ -39,6 +48,7 @@ void Player::resetBoard(bool wall)
     this->board.resetTiles(wall);
 }
 
+
 void Player::editBoard(RenderWindow& window, Font& font)
 {
     sf::Vector2i screenCenter(sf::VideoMode::getDesktopMode().width / 2, sf::VideoMode::getDesktopMode().height / 2);
@@ -46,7 +56,6 @@ void Player::editBoard(RenderWindow& window, Font& font)
     window.setPosition(windowPosition);
     bool panning = false;
     bool editing = false;
-    const std::vector<std::string> dropdownOptions = { "Option 1", "Option 2" };
     int selectedOption = -1; // Default to no option selected
     Vector2i pixel;
     Vector2i tileHover;
@@ -67,22 +76,22 @@ void Player::editBoard(RenderWindow& window, Font& font)
 
     sf::RectangleShape clearGridButton(sf::Vector2f(buttonWidth, buttonHeight));
     clearGridButton.setFillColor(sf::Color(66, 135, 245));
-    clearGridButton.setPosition(10, 10); // Moved the button down by 10 units.
+    clearGridButton.setPosition(10, 10);
 
     sf::Text clearGridText("Clear Grid", font, 18);
     clearGridText.setFillColor(sf::Color::White);
     clearGridText.setPosition(clearGridButton.getPosition().x + (buttonWidth - clearGridText.getLocalBounds().width) / 2,
-                              clearGridButton.getPosition().y + (buttonHeight - clearGridText.getLocalBounds().height) / 2);
+        clearGridButton.getPosition().y + (buttonHeight - clearGridText.getLocalBounds().height) / 2);
 
     sf::RectangleShape chooseAlgorithmButton(sf::Vector2f(buttonWidth + 60, buttonHeight));
     chooseAlgorithmButton.setFillColor(sf::Color(66, 135, 245));
-    chooseAlgorithmButton.setPosition(window.getSize().x - buttonWidth - 80, clearGridButton.getPosition().y); // Align the "Choose Algorithm" button with the "Clear Grid" button
+    chooseAlgorithmButton.setPosition(window.getSize().x - buttonWidth - 80, clearGridButton.getPosition().y);
 
     sf::Text chooseAlgorithmText("Choose Algorithm", font, 18);
     chooseAlgorithmText.setFillColor(sf::Color::White);
     chooseAlgorithmText.setPosition(chooseAlgorithmButton.getPosition().x + 30 + (buttonWidth - (chooseAlgorithmText.getLocalBounds().width)) / 2,
-                                    chooseAlgorithmButton.getPosition().y + (buttonHeight - chooseAlgorithmText.getLocalBounds().height) / 2);
-    
+        chooseAlgorithmButton.getPosition().y + (buttonHeight - chooseAlgorithmText.getLocalBounds().height) / 2);
+
     float timer = 30.0f;
     bool isTimerRunning = true;
     sf::Clock clock;
@@ -95,17 +104,15 @@ void Player::editBoard(RenderWindow& window, Font& font)
     sf::Text timerText("Time left: " + std::to_string(static_cast<int>(timer)) + " seconds", font, 18);
     timerText.setFillColor(sf::Color::White);
     timerText.setPosition(timerBox.getPosition().x + (timerBoxWidth - timerText.getLocalBounds().width) / 2,
-                          timerBox.getPosition().y + (timerBoxHeight - timerText.getLocalBounds().height) / 2);
+        timerBox.getPosition().y + (timerBoxHeight - timerText.getLocalBounds().height) / 2);
 
     Text editorText("Editor Menu Keybindings:\nLeft Click (M1)- Edit Grid Element\nRight Click (M2)- Pan Grid View\n"
-                    "Scroll Wheel Up/Down- Zoom In/Out on Hovered Pixel\nEnter- Save Map to File\nEscape- Return to Debug Menu\n", font, 18);
-    editorText.setOrigin(editorText.getLocalBounds().width/2.0, editorText.getLocalBounds().height/2.0);
+        "Scroll Wheel Up/Down- Zoom In/Out on Pixel\nEnter- Save Map to File\nEscape- Return to Debug Menu\n", font, 16);
+    editorText.setOrigin(editorText.getLocalBounds().width / 2.0, editorText.getLocalBounds().height / 2.0);
     editorText.setFillColor(Color::White);
-    editorText.setPosition(editorText.getLocalBounds().width, editorText.getLocalBounds().height - 20);
+    editorText.setPosition(editorText.getLocalBounds().width - 70, editorText.getLocalBounds().height - 30);
 
     const float minCameraY = window.getSize().y - timerBoxHeight - 20;
-    const int dropdownButtonHeight = 30;
-    bool isDropdownVisible = false;
 
     while (window.isOpen())
     {
@@ -115,128 +122,171 @@ void Player::editBoard(RenderWindow& window, Font& font)
         {
             switch (event.type)
             {
-                case Event::Closed:
-                    window.close();
-                    break;
+            case Event::Closed:
+                window.close();
+                break;
 
-                case Event::KeyPressed:                  
-                    if (event.key.code == Keyboard::Enter)
-                    {
-                        window.setView(window.getDefaultView());
-                        fileName = getFileName(window, font);
-                        this->board.writeToFile(fileName);
-                        return;
-                    }
-                    else if (event.key.code == Keyboard::G)
-                    {
-                        this->board.generate(15, 15);
-                    }
-                    
-                    else if (event.key.code == Keyboard::Escape)
-                    {
-                        return;
-                    }
-                    break;
+            case Event::KeyPressed:
+                if (event.key.code == Keyboard::Enter)
+                {
+                    window.setView(window.getDefaultView());
+                    fileName = getFileName(window, font);
+                    this->board.writeToFile(fileName);
+                    return;
+                }
+                else if (event.key.code == Keyboard::G)
+                {
+                    this->board.generate(15, 15);
+                }
 
-                case Event::MouseButtonPressed:
-                    if (event.mouseButton.button == Mouse::Left)
+                else if (event.key.code == Keyboard::Escape)
+                {
+                    return;
+                }
+                break;
+
+            case Event::MouseButtonPressed:
+                if (event.mouseButton.button == Mouse::Left)
+                {
+                    editing = true;
+                    coords = window.mapPixelToCoords(Vector2i(event.mouseButton.x, event.mouseButton.y));
+                    tileHover.x = floor(coords.x / board.tileDim);
+                    tileHover.y = floor(coords.y / board.tileDim);
+                    tileStack.push_back(tileHover);
+                    onClick(tileHover);
+                    window.setView(window.getDefaultView());
+                    coords = window.mapPixelToCoords(Vector2i(event.mouseButton.x, event.mouseButton.y));
+                    sf::Vector2f buttonPosition = clearGridButton.getPosition();
+                    sf::FloatRect clearGridArea(clearGridText.getGlobalBounds());
+                    sf::FloatRect chooseAlgorithmArea(chooseAlgorithmButton.getPosition(), sf::Vector2f(buttonWidth + 60, buttonHeight));
+                    if (clearGridArea.contains(coords))
                     {
-                        editing = true;
-                        coords = window.mapPixelToCoords(Vector2i(event.mouseButton.x, event.mouseButton.y));
-                        tileHover.x = floor(coords.x/board.tileDim);
-                        tileHover.y = floor(coords.y/board.tileDim);
+                        this->resetBoard();
+                    }
+                    else if (chooseAlgorithmArea.contains(coords))
+                    {
+                        // Show the algorithm selection window
+                        RenderWindow algorithmSelectionWindow(VideoMode(200, 100), "Choose Algorithm", Style::Titlebar | Style::Close);
+                        algorithmSelectionWindow.setPosition(getCenteredPosition(window, Vector2u(200, 100)));
+                        algorithmSelectionWindow.setFramerateLimit(60);
+
+                        while (algorithmSelectionWindow.isOpen())
+                        {
+                            Event algorithmEvent;
+                            while (algorithmSelectionWindow.pollEvent(algorithmEvent))
+                            {
+                                switch (algorithmEvent.type)
+                                {
+                                case Event::Closed:
+                                    algorithmSelectionWindow.close();
+                                    break;
+
+                                case Event::MouseButtonPressed:
+                                    if (algorithmEvent.mouseButton.button == Mouse::Left)
+                                    {
+                                        // Check if Option 1 is clicked
+                                        if (algorithmEvent.mouseButton.x >= 0 && algorithmEvent.mouseButton.x <= 200 &&
+                                            algorithmEvent.mouseButton.y >= 0 && algorithmEvent.mouseButton.y <= 50)
+                                        {
+                                            cout << "Option 1 clicked!" << endl;
+                                            algorithmSelectionWindow.close();
+                                        }
+                                        // Check if Option 2 is clicked
+                                        else if (algorithmEvent.mouseButton.x >= 0 && algorithmEvent.mouseButton.x <= 200 &&
+                                            algorithmEvent.mouseButton.y >= 50 && algorithmEvent.mouseButton.y <= 100)
+                                        {
+                                            cout << "Option 2 clicked!" << endl;
+                                            algorithmSelectionWindow.close();
+                                        }
+                                    }
+                                    break;
+                                }
+
+                                algorithmSelectionWindow.clear(Color(173, 216, 230));
+
+                                // Draw Option 1
+                                RectangleShape option1Rect(Vector2f(200, 50));
+                                option1Rect.setFillColor(Color(66, 135, 245));
+                                algorithmSelectionWindow.draw(option1Rect);
+
+                                Text option1Text("Option 1", font, 18);
+                                option1Text.setFillColor(Color::White);
+                                option1Text.setOrigin(option1Text.getLocalBounds().width / 2.0f, option1Text.getLocalBounds().height / 2.0f);
+                                option1Text.setPosition(100, 25);
+                                algorithmSelectionWindow.draw(option1Text);
+
+                                // Draw Option 2
+                                RectangleShape option2Rect(Vector2f(200, 50));
+                                option2Rect.setFillColor(Color(66, 135, 245));
+                                option2Rect.setPosition(0, 50);
+                                algorithmSelectionWindow.draw(option2Rect);
+
+                                Text option2Text("Option 2", font, 18);
+                                option2Text.setFillColor(Color::White);
+                                option2Text.setOrigin(option2Text.getLocalBounds().width / 2.0f, option2Text.getLocalBounds().height / 2.0f);
+                                option2Text.setPosition(100, 75);
+                                algorithmSelectionWindow.draw(option2Text);
+
+                                algorithmSelectionWindow.display();
+                            }
+                        }
+                    }
+                    window.setView(camera);
+                }
+                else if (event.mouseButton.button == Mouse::Right)
+                {
+                    panning = true;
+                    m0 = window.mapPixelToCoords(Mouse::getPosition(window));
+                }
+                break;
+
+            case Event::MouseButtonReleased:
+                if (event.mouseButton.button == Mouse::Left)
+                {
+                    tileStack.clear();
+                    editing = false;
+                }
+                else if (event.mouseButton.button == Mouse::Right)
+                {
+                    panning = false;
+                }
+                break;
+
+            case Event::MouseMoved:
+                if (editing)
+                {
+                    coords = window.mapPixelToCoords(Mouse::getPosition(window));
+                    tileHover.x = floor(coords.x / board.tileDim);
+                    tileHover.y = floor(coords.y / board.tileDim);
+                    if (tileHover != tileStack.back())
+                    {
                         tileStack.push_back(tileHover);
                         onClick(tileHover);
-                        window.setView(window.getDefaultView());
-                        coords = window.mapPixelToCoords(Vector2i(event.mouseButton.x, event.mouseButton.y));
-                        sf::Vector2f buttonPosition = clearGridButton.getPosition();
-                        sf::FloatRect clearGridArea(clearGridText.getGlobalBounds());
-                        sf::FloatRect chooseAlgorithmArea(chooseAlgorithmButton.getPosition(), sf::Vector2f(buttonWidth + 60, buttonHeight));
-                        if (clearGridArea.contains(coords))
-                        {
-                            this->resetBoard();
-                        }
-                        else if (chooseAlgorithmArea.contains(coords))
-                        {
-                            cout << "out" << endl;
+                    }
+                }
+                else if (panning)
+                {
+                    m1 = window.mapPixelToCoords(Mouse::getPosition(window));
+                    camera.setCenter(camera.getCenter() + m0 - m1);
+                    camera.move(m0 - m1);
+                    window.setView(camera);
+                    m0 = window.mapPixelToCoords(Mouse::getPosition(window));
+                }
+                break;
 
-                            if (!isDropdownVisible)
-                            {
-                                isDropdownVisible = true;
-                            }
-                            else
-                            {
-                                // Process the selected option here (you can use 'selectedOption' variable)
-                                for (size_t i = 0; i < dropdownOptions.size(); ++i)
-                                {
-                                    sf::FloatRect optionArea(chooseAlgorithmButton.getPosition().x, chooseAlgorithmButton.getPosition().y + dropdownButtonHeight + i * buttonHeight, buttonWidth + 60, buttonHeight);
-                                    if (optionArea.contains(coords))
-                                    {
-                                        selectedOption = static_cast<int>(i);
-                                        std::cout << "Selected Option: " << dropdownOptions[selectedOption] << std::endl; // For debugging
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        window.setView(camera);
-                    }
-                    else if (event.mouseButton.button == Mouse::Right)
-                    {
-                        panning = true;
-                        m0 = window.mapPixelToCoords(Mouse::getPosition(window));
-                    }
-                    break;
-
-                case Event::MouseButtonReleased:
-                    if (event.mouseButton.button == Mouse::Left)
-                    {
-                        tileStack.clear();
-                        editing = false;
-                                           
-                    }
-
-                    else if (event.mouseButton.button == Mouse::Right)
-                    {
-                        panning = false;                    
-                    }
-                    break;
-
-                case Event::MouseMoved:
-                    if (editing)
-                    {
-                        coords = window.mapPixelToCoords(Mouse::getPosition(window));
-                        tileHover.x = floor(coords.x/board.tileDim);
-                        tileHover.y = floor(coords.y/board.tileDim);
-                        if (tileHover != tileStack.back())
-                        {
-                            tileStack.push_back(tileHover);
-                            onClick(tileHover);
-                        }                        
-                    }
-                    else if (panning)
-                    {
-                        m1 = window.mapPixelToCoords(Mouse::getPosition(window));
-                        camera.setCenter(camera.getCenter() + m0 - m1);
-                        camera.move(m0-m1);
-                        window.setView(camera);
-                        m0 = window.mapPixelToCoords(Mouse::getPosition(window));
-                    }
-                    break;
-                    
-                case Event::MouseWheelMoved:
-                    if (!panning)
-                    {
-                        float zoom = (event.mouseWheel.delta >= 0) ? .5 : 2;
-                        pixel = Vector2i(event.mouseButton.x, event.mouseButton.y);
-                        m0 = window.mapPixelToCoords(pixel);
-                        camera.zoom(zoom);
-                        window.setView(camera);
-                        m1 = window.mapPixelToCoords(pixel);
-                        camera.move(m0-m1);
-                        window.setView(camera);
-                    }
-                    break;
+            case Event::MouseWheelMoved:
+                if (!panning)
+                {
+                    float zoom = (event.mouseWheel.delta >= 0) ? .5 : 2;
+                    pixel = Vector2i(event.mouseButton.x, event.mouseButton.y);
+                    m0 = window.mapPixelToCoords(pixel);
+                    camera.zoom(zoom);
+                    window.setView(camera);
+                    m1 = window.mapPixelToCoords(pixel);
+                    camera.move(m0 - m1);
+                    window.setView(camera);
+                }
+                break;
             }
         }
 
@@ -252,21 +302,6 @@ void Player::editBoard(RenderWindow& window, Font& font)
                 timer = 30.0f;
             }
         }
-        
-        if (isDropdownVisible)
-        {
-            sf::RectangleShape dropdownBackground(sf::Vector2f(buttonWidth + 60, buttonHeight * dropdownOptions.size()));
-            dropdownBackground.setFillColor(sf::Color(66, 135, 245));
-            dropdownBackground.setPosition(chooseAlgorithmButton.getPosition().x, chooseAlgorithmButton.getPosition().y + dropdownButtonHeight);
-
-            for (size_t i = 0; i < dropdownOptions.size(); ++i)
-            {
-                sf::Text optionText(dropdownOptions[i], font, 18);
-                optionText.setFillColor(sf::Color::White);
-                optionText.setPosition(dropdownBackground.getPosition().x + 30, dropdownBackground.getPosition().y + i * buttonHeight);
-                window.draw(optionText);
-            }
-        }
 
         window.setView(window.getDefaultView());
         window.draw(editorText);
@@ -274,22 +309,23 @@ void Player::editBoard(RenderWindow& window, Font& font)
         window.draw(clearGridText);
         window.draw(chooseAlgorithmButton);
         window.draw(chooseAlgorithmText);
+
         window.draw(timerBox);
         window.draw(timerText);
+
         window.setView(camera);
         window.draw(this->board);
         window.display();
     }
-    
 }
 
 string Player::getFileName(RenderWindow& window, Font& font)
 {
     // Needs updated UI
-    Vector2f winCenter = ((Vector2f)window.getSize())/2.0f;
+    Vector2f winCenter = ((Vector2f)window.getSize()) / 2.0f;
     string query = "Enter File Name (No Extension): ";
     Text fileSelect(query, font, 24);
-    fileSelect.setOrigin(fileSelect.getLocalBounds().width/2.0, fileSelect.getLocalBounds().height/2.0);
+    fileSelect.setOrigin(fileSelect.getLocalBounds().width / 2.0, fileSelect.getLocalBounds().height / 2.0);
     fileSelect.setFillColor(Color::Black);
     fileSelect.setPosition(winCenter);
     string input;
@@ -304,7 +340,7 @@ string Player::getFileName(RenderWindow& window, Font& font)
             case Event::Closed:
                 window.close();
                 break;
-            
+
             case Event::KeyPressed:
                 if (event.key.code == Keyboard::Enter)
                 {
@@ -312,7 +348,7 @@ string Player::getFileName(RenderWindow& window, Font& font)
                 }
                 else if ((event.key.code == Keyboard::Backspace) && (input.size() > 0))
                 {
-                    input = input.substr(0, input.size()-1);
+                    input = input.substr(0, input.size() - 1);
                     fileSelect.setString(query + input);
                 }
                 break;
@@ -320,8 +356,8 @@ string Player::getFileName(RenderWindow& window, Font& font)
                 if (isalnum(static_cast<char>(event.text.unicode)))
                 {
                     input += static_cast<char>(event.text.unicode);
-                    fileSelect.setString(query + input);       
-                }  
+                    fileSelect.setString(query + input);
+                }
                 break;
             }
         }
