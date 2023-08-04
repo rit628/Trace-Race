@@ -26,7 +26,7 @@ void MatrixSelector::drawGrid(sf::RenderWindow &window, unsigned int& numRows, u
                         numRows = static_cast<int>(selectorEvent.mouseButton.y / _cellHeight) + 1;
                         numCols = static_cast<int>(selectorEvent.mouseButton.x / _cellWidth) + 1;
                         isClosed = true;
-                        window.close();
+                        return;
                     }
                     break;
             }

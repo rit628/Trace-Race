@@ -127,9 +127,8 @@ int main(int argc, char const *argv[])
                         // create dimensional matrix selector
                         if (isMatrixInput) {
                             // Matrix Selector Section
-                            RenderWindow matrixSelector(VideoMode(600, 600), "Select Race Dimensions [MATRIX INPUT]", Style::Close);
                             MatrixSelector matrixSelector1(50, 50);
-                            matrixSelector1.drawGrid(matrixSelector, numRows, numCols, isMatrixSelectorClosed);
+                            matrixSelector1.drawGrid(window, numRows, numCols, isMatrixSelectorClosed);
                         }
                     }
                     // run game (starting with Player 1)
@@ -168,7 +167,7 @@ int main(int argc, char const *argv[])
 
 string loadMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite)
 {
-    // Filename selector would be a drop down menu showing all of the files from files/
+    // TODO: add dropdown menu for current files
 
     Vector2f winCenter = ((Vector2f)window.getSize())/2.0f;
     Text fileSelect(query, font, 24);
