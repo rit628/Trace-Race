@@ -2,6 +2,7 @@
 #include <SFML/Audio.hpp>
 #include <map>
 #include <string>
+#include <filesystem>
 #include "Player.h"
 #include "ButtonMaker.h"
 #include "MusicPlayer.h"
@@ -11,8 +12,9 @@
 using namespace std;
 using namespace sf;
 
-string loadAndManualMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite);
+string loadMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite);
 void dimensionMenu(RenderWindow& window, const sf::Sprite& backgroundSprite, sf::Sprite& manualMenuSprite, bool& isMatrixClosed, bool& isManualClosed, unsigned int& numRows, unsigned int& numCols, Font& font);
+string manualMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite);
 
 int main(int argc, char const *argv[])
 {
@@ -116,7 +118,7 @@ int main(int argc, char const *argv[])
                     break;
 
                 case Event::MouseButtonPressed:
-
+                    // start new game
                     if (newGameButton.isClicked(mousePosition)){
                         bool isMatrixInput = false;
                         dimensionMenu(window, dimensionMenuSprite, manualMenuSprite, isMatrixInput, isManualInputClosed, numRows, numCols, font);
@@ -143,8 +145,8 @@ int main(int argc, char const *argv[])
                     {
                         // Enter edit mode for player 1 based on file
                         window.pollEvent(event);
-                        fileName = loadAndManualMenu(window, font, "Enter File Name (No Extension): \n          ",
-                                                     loadMenuSprite);
+                        fileName = loadMenu(window, font, "Enter File Name (No Extension): \n          ",
+                                            loadMenuSprite);
                         p1->buildBoard(fileName);
                         p1->editBoard(window, font);
                         window.setView(window.getDefaultView());
@@ -164,10 +166,8 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
-string loadAndManualMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite)
+string loadMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite)
 {
-    // In the final version this would be split into two routines
-    // Dimension selector would have a gui showing an interactive matrix (similar to the table insert function in ms word)
     // Filename selector would be a drop down menu showing all of the files from files/
 
     Vector2f winCenter = ((Vector2f)window.getSize())/2.0f;
@@ -187,7 +187,7 @@ string loadAndManualMenu(RenderWindow& window, Font& font, const string& query, 
             case Event::Closed:
                 window.close();
                 break;
-            
+
             case Event::KeyPressed:
                 if (event.key.code == Keyboard::Enter)
                 {
@@ -203,8 +203,8 @@ string loadAndManualMenu(RenderWindow& window, Font& font, const string& query, 
                 if (isalnum(static_cast<char>(event.text.unicode)))
                 {
                     input += static_cast<char>(event.text.unicode);
-                    fileSelect.setString(query + input);       
-                }  
+                    fileSelect.setString(query + input);
+                }
                 break;
             }
         }
@@ -214,6 +214,7 @@ string loadAndManualMenu(RenderWindow& window, Font& font, const string& query, 
     }
     if (query == "Enter File Name (No Extension): ")
     {
+
         return "map";
     }
     else
@@ -245,7 +246,7 @@ void dimensionMenu(RenderWindow& window, const sf::Sprite& backgroundSprite, sf:
                     else if (event.key.code == Keyboard::D)
                     {
                         window.pollEvent(event);
-                        string dims = loadAndManualMenu(window, font, "Enter Dimensions (RxC): \n           ",
+                        string dims = manualMenu(window, font, "Enter Dimensions (RxC): \n           ",
                                                         manualMenuSprite);
                         numRows = stoi(dims.substr(0, dims.find('x')));
                         numCols = stoi(dims.substr(dims.find('x')+1));
@@ -258,4 +259,51 @@ void dimensionMenu(RenderWindow& window, const sf::Sprite& backgroundSprite, sf:
         window.draw(backgroundSprite);
         window.display();
     }
+}
+
+string manualMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite)
+{
+    Vector2f winCenter = ((Vector2f)window.getSize())/2.0f;
+    Text fileSelect(query, font, 24);
+    fileSelect.setOrigin(fileSelect.getLocalBounds().width/2.0, fileSelect.getLocalBounds().height/2.0);
+    fileSelect.setFillColor(Color::White);
+    fileSelect.setPosition(winCenter);
+    string input;
+    while (window.isOpen())
+    {
+        window.clear(Color::Cyan);
+        Event event;
+        while (window.pollEvent(event))
+        {
+            switch (event.type)
+            {
+                case Event::Closed:
+                    window.close();
+                    break;
+
+                case Event::KeyPressed:
+                    if (event.key.code == Keyboard::Enter)
+                    {
+                        return input;
+                    }
+                    else if ((event.key.code == Keyboard::Backspace) && (input.size() > 0))
+                    {
+                        input = input.substr(0, input.size()-1);
+                        fileSelect.setString(query + input);
+                    }
+                    break;
+                case Event::TextEntered:
+                    if (isalnum(static_cast<char>(event.text.unicode)))
+                    {
+                        input += static_cast<char>(event.text.unicode);
+                        fileSelect.setString(query + input);
+                    }
+                    break;
+            }
+        }
+        window.draw(backgroundSprite);
+        window.draw(fileSelect);
+        window.display();
+    }
+    return "";
 }
