@@ -11,7 +11,8 @@
 using namespace std;
 using namespace sf;
 
-string querySelectorDEBUG(RenderWindow& window, Font& font, string query, sf::Sprite backgroundSprite);
+string loadAndManualMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite);
+void dimensionMenu(RenderWindow& window, const sf::Sprite& backgroundSprite, sf::Sprite& manualMenuSprite, bool& isMatrixClosed, bool& isManualClosed, unsigned int& numRows, unsigned int& numCols, Font& font);
 
 int main(int argc, char const *argv[])
 {
@@ -74,6 +75,7 @@ int main(int argc, char const *argv[])
 
     Player* p1 = new Player("Debug");
 
+
     while (window.isOpen())
     {
         bool isMatrixSelectorClosed = false;
@@ -95,7 +97,6 @@ int main(int argc, char const *argv[])
 
                 mainMenuSprite.setScale(scaleX, scaleY);
 
-
                 // move clickables
                 newGameButton.updateScale(scaleX, scaleY);
             }
@@ -116,57 +117,11 @@ int main(int argc, char const *argv[])
 
                 case Event::MouseButtonPressed:
 
-                    if (newGameButton.isClicked(mousePosition))
-                                    {
-                        // input selection
-                        //TODO: CREATE MENU FOR INPUT SELECTION
-                        RenderWindow selectorType(VideoMode(600,600), "Choose Dimensional Input", Style::Close);
-                        selectorType.setFramerateLimit(360);
-                        sf::Vector2i windowPosition = window.getPosition();
-                        selectorType.setPosition(windowPosition);
-                        Text inputChoice("f- Matrix Input\n" "d- Manual Input \n", font, 24);
-                        inputChoice.setFillColor(Color::Black);
-                        Vector2f winCenter = ((Vector2f)selectorType.getSize())/2.0f;
-                        inputChoice.setOrigin(inputChoice.getLocalBounds().width/2.0, inputChoice.getLocalBounds().height/2.0);
-                        inputChoice.setPosition(winCenter);
-
+                    if (newGameButton.isClicked(mousePosition)){
                         bool isMatrixInput = false;
+                        dimensionMenu(window, dimensionMenuSprite, manualMenuSprite, isMatrixInput, isManualInputClosed, numRows, numCols, font);
+                        window.setFramerateLimit(360);
 
-                        while (selectorType.isOpen()) {
-                            Event inputEvent;
-
-
-                            while (selectorType.pollEvent(inputEvent)) {
-                                if (inputEvent.type == Event::Closed) {
-                                    selectorType.close();
-                                }
-                                // mute with m
-                                if (inputEvent.type == Event::KeyPressed) {
-                                    if (inputEvent.key.code == Keyboard::M) {
-                                        backgroundMusic.toggleMute();
-                                    }
-                                }
-                                // f = select matrix input
-                                if (inputEvent.type == Event::KeyPressed) {
-                                    if (inputEvent.key.code == Keyboard::F) {
-                                        isMatrixInput = true;
-                                        selectorType.close();
-                                    }
-                                        // d = manually enter dimensions
-                                    else if (inputEvent.key.code == Keyboard::D) {
-                                        selectorType.pollEvent(event);
-                                        dims = querySelectorDEBUG(selectorType, font, "Enter Dimensions (RxC): \n           ", manualMenuSprite);
-                                        numRows = stoi(dims.substr(0, dims.find('x')));
-                                        numCols = stoi(dims.substr(dims.find('x')+1));
-                                        isManualInputClosed = true;
-                                        selectorType.close();
-                                    }
-                                }
-                            }
-//                            selectorType.clear(Color::White);
-                            selectorType.draw(dimensionMenuSprite);
-                            selectorType.display();
-                        }
                         // create dimensional matrix selector
                         if (isMatrixInput) {
                             // Matrix Selector Section
@@ -183,12 +138,13 @@ int main(int argc, char const *argv[])
                         p1->editBoard(window, font);
                         window.setView(window.getDefaultView());
                     }
-                    // pull load game menu
+                    // load game menu
                     if (loadGameButton.isClicked(mousePosition))
                     {
                         // Enter edit mode for player 1 based on file
                         window.pollEvent(event);
-                        fileName = querySelectorDEBUG(window, font, "Enter File Name (No Extension): \n          ", loadMenuSprite);
+                        fileName = loadAndManualMenu(window, font, "Enter File Name (No Extension): \n          ",
+                                                     loadMenuSprite);
                         p1->buildBoard(fileName);
                         p1->editBoard(window, font);
                         window.setView(window.getDefaultView());
@@ -208,7 +164,7 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
-string querySelectorDEBUG(RenderWindow& window, Font& font, string query, sf::Sprite backgroundSprite)
+string loadAndManualMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite)
 {
     // In the final version this would be split into two routines
     // Dimension selector would have a gui showing an interactive matrix (similar to the table insert function in ms word)
@@ -263,5 +219,43 @@ string querySelectorDEBUG(RenderWindow& window, Font& font, string query, sf::Sp
     else
     {
         return "10x10";
+    }
+}
+
+void dimensionMenu(RenderWindow& window, const sf::Sprite& backgroundSprite, sf::Sprite& manualMenuSprite, bool& isMatrixClosed, bool& isManualClosed, unsigned int& numRows, unsigned int& numCols, Font& font)
+{
+    while (window.isOpen())
+    {
+        window.clear(Color::Cyan);
+        Event event;
+        while (window.pollEvent(event))
+        {
+            switch (event.type)
+            {
+                case Event::Closed:
+                    window.close();
+                    break;
+
+                case Event::KeyPressed:
+                    if (event.key.code == Keyboard::F)
+                    {
+                        isMatrixClosed = true;
+                        return;
+                    }
+                    else if (event.key.code == Keyboard::D)
+                    {
+                        window.pollEvent(event);
+                        string dims = loadAndManualMenu(window, font, "Enter Dimensions (RxC): \n           ",
+                                                        manualMenuSprite);
+                        numRows = stoi(dims.substr(0, dims.find('x')));
+                        numCols = stoi(dims.substr(dims.find('x')+1));
+                        isManualClosed = true;
+                        return;
+                    }
+                    break;
+            }
+        }
+        window.draw(backgroundSprite);
+        window.display();
     }
 }
