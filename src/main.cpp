@@ -182,9 +182,10 @@ int main(int argc, char const *argv[])
                     {
                         // Enter edit mode for player 1
                         p1->buildBoard(numRows, numCols);
-                        p1->editBoard(window, font);
-                        p2->buildBoard(numRows, numCols);
-                        p2->editBoard(window, font);
+                        unsigned int finishCol = p1->editBoard(window, font);
+                        p2->generateBoard(numRows, numCols, finishCol);
+                        // p2->buildBoard(numRows, numCols);
+                        // p2->editBoard(window, font);
                         window.setView(window.getDefaultView());
                         battle(window, p1, p2);                     
                     }
@@ -280,6 +281,7 @@ void battle(RenderWindow& window, Player* p1, Player* p2)
     Board final = p1->combineBoard(*p2);
     bool panning = false;
     Vector2f m0, m1;
+    Vector2i pixel;
     View camera = window.getDefaultView();
     while (window.isOpen())
     {
@@ -314,6 +316,19 @@ void battle(RenderWindow& window, Player* p1, Player* p2)
                         camera.move(m0 - m1);
                         window.setView(camera);
                         m0 = window.mapPixelToCoords(Mouse::getPosition(window));
+                    }
+                    break;
+                case Event::MouseWheelMoved:
+                    if (!panning)
+                    {
+                        float zoom = (event.mouseWheel.delta >= 0) ? .5 : 2;
+                        pixel = Vector2i(event.mouseButton.x, event.mouseButton.y);
+                        m0 = window.mapPixelToCoords(pixel);
+                        camera.zoom(zoom);
+                        window.setView(camera);
+                        m1 = window.mapPixelToCoords(pixel);
+                        camera.move(m0 - m1);
+                        window.setView(camera);
                     }
                     break;
                 case Event::KeyPressed:

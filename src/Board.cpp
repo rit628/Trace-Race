@@ -108,23 +108,11 @@ Board Board::combine(Board& RHS)
     combined.paths.insert(RHS.paths.begin(), RHS.paths.end());
     int startID = this->start->id;
     int endID = RHS.start->id;
+    // Changes textures on connection tiles
     combined.start = combined.tiles.at(startID / numCols).at(startID % numCols);
     combined.finish = combined.tiles.at((endID /numCols) + numRows).at(endID % numCols);
     combined.start->flip('S');
     combined.finish->flip('F');
-    //combined.tiles.insert(combined.tiles.end(), RHS.tiles.begin(), RHS.tiles.end());
-    // 
-    // Changes textures on connection tiles
-    // combined.finish->isWall = true;
-    // combined.finish->flip();
-    // RHS.finish->isWall = true;
-    // RHS.finish->flip();
-
-    // combined.finish = RHS.start;
-    // RHS.finish = combined.start;
-    // combined.finish->flip('F');
-    // RHS.finish->flip('F');    
-
     return combined;
 }
 
@@ -224,6 +212,8 @@ void Board::writeToFile(string fileName)
 
 void Board::generate(unsigned int numRows, unsigned int numCols, int finishID)
 {
+    // O(V^2)
+    // Randomly generates dimensions if none were assigned
     if (numRows == 0)
     {
         uniform_int_distribution<int> dist(3, 200);
@@ -241,24 +231,32 @@ void Board::generate(unsigned int numRows, unsigned int numCols, int finishID)
     vector<Tile*> endPoints;
     vector<pair<Tile*, Tile*>> pathNeighbors;
     unordered_set<Tile*> added;
+    Direction inward;
     Tile* currVertex;
     Tile* targetCell;
     Tile* selected;
-    int illegalRow = -1;
+    int finishRow = 0;
+    int startRow = 0;
     int index = dist(gen);
-    int row = index / numCols;
-    int col = index % numCols;
     if (finishID != -1)
     {
-        currVertex = this->tiles.at(finishID / numCols).at(finishID % numCols);
-        illegalRow = finishID / numCols;
+        currVertex = this->tiles.at(0).at(finishID);
+        finishRow = 0;
+        startRow = numRows - 1;
         currVertex->flip('F');
         this->finish = currVertex;
     }
     else
     {
-        currVertex = this->tiles.at(row).at(col);
-        currVertex->flip();        
+        finishRow = this->numRows-1;
+        startRow = 0;
+        do
+        {
+            currVertex = this->tiles.at(index / numCols).at(index % numCols);
+            index = dist(gen);
+        } 
+        while (currVertex->neighbors.size() < 4);
+        currVertex->flip();
     }
     
     this->paths.emplace(currVertex->id, currVertex);
@@ -273,16 +271,49 @@ void Board::generate(unsigned int numRows, unsigned int numCols, int finishID)
         }
     }
 
+    // Populates list of possible finishing tiles
+    for (auto tile : this->tiles.at(finishRow))
+    {
+        if ((tile->id % numCols != 0) && (tile->id % numCols != numCols-1))
+        {
+            endPoints.push_back(tile);
+        }
+    }
+    
+    // Populates list of possible starting tiles
+    for (auto tile : this->tiles.at(startRow))
+    {
+        if ((tile->id % numCols != 0) && (tile->id % numCols != numCols-1))
+        {
+            startPoints.push_back(tile);
+        }
+    }
+
+    for (int i = 0; i < numRows; i++)
+    {
+        if ((i != finishRow) && (i != startRow))
+        {
+            startPoints.push_back(this->tiles.at(i).at(0));
+            startPoints.push_back(this->tiles.at(i).at(numCols-1));
+        }
+    }
+
     while (!unexplored.empty())
     {
         // Selects a random vertex from the set of unexplored cells
         uniform_int_distribution<int> wallSelect(0, unexplored.size()-1);
         index = wallSelect(gen);
         currVertex = unexplored.at(index);
-        currVertex->flip();
-        this->paths.emplace(currVertex->id, currVertex);
         unexplored.erase(unexplored.begin() + index);
 
+        if (currVertex->neighbors.size() < 4)
+        {
+            continue;            
+        }
+
+        currVertex->flip();
+        this->paths.emplace(currVertex->id, currVertex);
+        
         // Iterates over all possible targets for traversal
         for (auto vertex : currVertex->neighbors)
         {
@@ -303,96 +334,83 @@ void Board::generate(unsigned int numRows, unsigned int numCols, int finishID)
                 }
             }
         }
+        // Randomly selects a neighbor to connect with a path
         uniform_int_distribution<int> pathSelect(0, pathNeighbors.size()-1);
         index = pathSelect(gen);
         selected = pathNeighbors.at(index).first;
         selected->flip();  
         this->paths.emplace(selected->id, selected);
         pathNeighbors.clear();
-        if ((currVertex->id / numCols) != illegalRow)
-        {
-            if ((currVertex->id / numCols == 0) || (currVertex->id / numCols == numRows-1))
-            {
-                endPoints.push_back(currVertex);
-            }
-            else if (currVertex->neighbors.size() < 4)
-            {
-                startPoints.push_back(currVertex);
-            }
-        }
-        
-        if ((selected->id / numCols) != illegalRow)
-        {
-            if ((selected->id / numCols == 0) || (selected->id / numCols == numRows-1))
-            {
-                endPoints.push_back(selected);
-            }
-            else if (selected->neighbors.size() < 4)
-            {
-                startPoints.push_back(selected);
-            }
-        }        
     }
-    Direction inward;
-    if (this->finish == nullptr)
+
+    inward = (finishRow == 0) ? Direction::S : Direction::N;
+    // Randomly generates a finishing tile
+    while (this->finish == nullptr)
     {
-        if (endPoints.size() == 0)
-        {
-            uniform_int_distribution<int> finishSelect(0, 1);
-            int row = (finishSelect(gen) == 0) ? 0 : numRows-1;
-            inward = (row == 0) ? Direction::S : Direction::N;
-            for (int i = 0; i < numCols; i++)
-            {
-                if (!this->tiles.at(row).at(i)->neighbors.at(inward)->isWall)
-                {
-                    endPoints.push_back(this->tiles.at(row).at(i));
-                }
-                
-            }
-            
-        }
-        
         uniform_int_distribution<int> finishSelect(0, endPoints.size()-1);
         index = finishSelect(gen);
-        this->finish = endPoints.at(index);
-        this->finish->flip('F');
-        illegalRow = this->finish->id / numCols;
-        for (int i = 0; i < endPoints.size(); i++)
+        // Checks if endpoint is connected to the rest of the maze
+        if (!endPoints.at(index)->neighbors.at(inward)->isWall)
         {
-            if ((endPoints.at(i)->id / numCols) != illegalRow)
-            {
-                startPoints.push_back(endPoints.at(i));
-            }
-            
+            finish = endPoints.at(index);
+            finish->flip('F');
+        }
+        else if (!endPoints.at(index)->neighbors.at(inward)->neighbors.at(inward)->isWall)
+        {
+            finish = endPoints.at(index);
+            finish->flip('F');
+            endPoints.at(index)->neighbors.at(inward)->flip();
         }
         
-    }
-    
-    if (startPoints.size() == 0)
-    {
-        int row = (illegalRow == 0) ? numRows-1 : 0;
-        inward = (row == 0) ? Direction::S : Direction::N;
-        for (int i = 0; i < numCols; i++)
+        else
         {
-            startPoints.push_back(this->tiles.at(row).at(i));
+            endPoints.erase(endPoints.begin() + index);
         }
     }
-    do
+
+    // Randomly generates starting tile
+    while (this->start == nullptr)
     {
         uniform_int_distribution<int> startSelect(0, startPoints.size()-1);
         index = startSelect(gen);
-    } 
-    while ((startPoints.at(index)->isWall) && (startPoints.at(index)->neighbors.at(inward)->isWall));
-    
-    
-    this->start = startPoints.at(index);
-    this->start->flip('S');
+        int id = startPoints.at(index)->id;
+        // Computes inward direction based on position in grid
+        if (id % numCols == 0)
+        {
+            inward = Direction::E;
+        }
+        else if (id % numCols == numCols-1)
+        {
+            inward = Direction::W;
+        }
+        else
+        {
+            inward = (startRow == 0) ? Direction::S : Direction::N;
+        }
 
-
+        // Checks if startpoint is connected to the rest of the maze
+        if (!startPoints.at(index)->neighbors.at(inward)->isWall)
+        {
+            start = startPoints.at(index);
+            start->flip('S');
+        }
+        else if (!startPoints.at(index)->neighbors.at(inward)->neighbors.at(inward)->isWall)
+        {
+            start = startPoints.at(index);
+            start->flip('S');
+            startPoints.at(index)->neighbors.at(inward)->flip();
+        }
+        
+        else
+        {
+            startPoints.erase(startPoints.begin() + index);
+        }
+    }
 }
 
 void Board::makeConnected()
 {
+    // O(V+E)
     // Runs a breadth first search starting at the "start" labeled tile to determine all nodes that can be reached from it
     queue<Tile*> q;
     map<int, Tile*> visited;
