@@ -51,7 +51,7 @@ int main(int argc, char const* argv[])
 
     Player* p1 = new Player("Debug");
 
-    Text liveDimensions("", font, 16);
+    Text liveDimensions("", font, 20);
     liveDimensions.setFillColor(Color::Black);
 
 
@@ -148,7 +148,7 @@ int main(int argc, char const* argv[])
                         int highlightRow = -1;
                         int highlightCol = -1;
 
-                        liveDimensions.setPosition(10.f, matrixSelector.getSize().y - 20.f);
+                        liveDimensions.setPosition(130.f, matrixSelector.getSize().y - 35.f);
                         
 
                         while (matrixSelector.isOpen())
