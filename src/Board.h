@@ -21,6 +21,7 @@ class Board : public sf::Drawable
         Tile* finish = nullptr;
         void build(unsigned int numCols, unsigned int numRows);
         void build(std::string fileName);
+        Board combine(Board& RHS);
         void resetTiles(bool isWall);
         void reset();
         void draw(sf::RenderTarget& target, sf::RenderStates states) const;

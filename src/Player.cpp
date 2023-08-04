@@ -45,13 +45,25 @@ void Player::buildBoard(string fileName)
     this->board.build(fileName);
 }
 
+Board Player::combineBoard(Player& p2)
+{
+    return this->board.combine(p2.board);
+}
+
 void Player::resetBoard(bool wall)
 {
     this->board.resetTiles(wall);
 }
 
 
-void Player::editBoard(RenderWindow& window, Font& font)
+unsigned int Player::generateBoard(unsigned int numRows, unsigned int numCols, int finishCol)
+{
+    // Add random algo choice
+    this->board.generate(numRows, numCols, finishCol);
+    return this->board.finish->id;
+}
+
+unsigned int Player::editBoard(RenderWindow& window, Font& font)
 {
 //    sf::Vector2i screenCenter(sf::VideoMode::getDesktopMode().width / 2, sf::VideoMode::getDesktopMode().height / 2);
 //    sf::Vector2i windowPosition(screenCenter.x - window.getSize().x / 2, screenCenter.y - window.getSize().y / 2);
@@ -144,7 +156,7 @@ void Player::editBoard(RenderWindow& window, Font& font)
                         window.setView(window.getDefaultView());
                         fileName = getFileName(window, font);
                         this->board.writeToFile(fileName);
-                        return;
+                        return this->board.finish->id % this->board.numCols;
                     }
                     else if (event.key.code == Keyboard::G)
                     {
@@ -171,7 +183,8 @@ void Player::editBoard(RenderWindow& window, Font& font)
                     
                     else if (event.key.code == Keyboard::Escape)
                     {
-                        return;
+                        // check if board is valid
+                        return this->board.finish->id % this->board.numCols;
                     }
                     break;
 
@@ -359,6 +372,7 @@ void Player::editBoard(RenderWindow& window, Font& font)
         window.draw(this->board);
         window.display();
     }
+    return this->board.finish->id % this->board.numCols;
 }
 
 string Player::getFileName(RenderWindow& window, Font& font)
