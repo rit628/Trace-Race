@@ -25,7 +25,6 @@ int main(int argc, char const *argv[])
     mainMenuTexture.loadFromFile("files/images/main_menu.png");
     RenderWindow window(VideoMode(mainMenuTexture.getSize().x, mainMenuTexture.getSize().y), "Trace Race", Style::Default);
 
-    // Set the initial window position to the center of the screen
     sf::Vector2i screenCenter(sf::VideoMode::getDesktopMode().width / 2, sf::VideoMode::getDesktopMode().height / 2);
     sf::Vector2i windowPosition(screenCenter.x - window.getSize().x / 2, screenCenter.y - window.getSize().y / 2);
     window.setPosition(windowPosition);
@@ -50,25 +49,19 @@ int main(int argc, char const *argv[])
 
     sf::Rect<float> newGameZone(scaledNewGameX, scaledNewGameY, scaledNewGameWidth, scaledNewGameHeight);
 
-
     Player* p1 = new Player("Debug");
 
     while (window.isOpen())
     {
-
-        // DEBUG SECTION
         Vector2i  mousePosition = Mouse::getPosition(window);
         bool isMatrixSelectorClosed = false;
         bool isManualInputClosed = false;
-        // MOUSE DEBUGGER
-//        cout << "x: "<< mousePosition.x << " y: "<< mousePosition.y << endl;
 
         window.clear(Color::Blue);
 
         Event event;
         while (window.pollEvent(event))
         {
-            // make window resizable
             if (event.type == sf::Event::Resized) {
                 sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
                 window.setView(sf::View(visibleArea));
@@ -78,8 +71,6 @@ int main(int argc, char const *argv[])
 
                 mainMenuSprite.setScale(scaleX, scaleY);
 
-
-                // move clickables
                 newGameZone.left = newGameX * scaleX;
                 newGameZone.top = newGameY * scaleY;
                 newGameZone.width = newGameWidth * scaleX;
@@ -87,16 +78,13 @@ int main(int argc, char const *argv[])
             }
             switch (event.type)
             {
-                // close window
                 case Event::Closed:
                     window.close();
                     break;
-                // create dimension type selector menu
                 case Event::MouseButtonPressed:
                     if (newGameZone.contains(event.mouseButton.x, event.mouseButton.y))
-                                    {
-                        // input selection
-                        RenderWindow selectorType(VideoMode(600,600), "Choose Dimensional Input", Style::Close);
+                    {
+                        RenderWindow selectorType(VideoMode(600, 600), "Choose Dimensional Input", Style::Close);
                         selectorType.setPosition(windowPosition);
                         selectorType.setFramerateLimit(360);
                         Text inputChoice("f- Matrix Input\n" "d- Manual Input \n", font, 24);
@@ -113,13 +101,11 @@ int main(int argc, char const *argv[])
                                 if (inputEvent.type == Event::Closed) {
                                     selectorType.close();
                                 }
-                                // f = select matrix input
                                 if (inputEvent.type == Event::KeyPressed) {
                                     if (inputEvent.key.code == Keyboard::F) {
                                         isMatrixInput = true;
                                         selectorType.close();
                                     }
-                                        // d = manually enter dimensions
                                     else if (inputEvent.key.code == Keyboard::D) {
                                         selectorType.pollEvent(event);
                                         dims = querySelectorDEBUG(selectorType, font, "Enter Dimensions (RxC): ");
@@ -127,7 +113,6 @@ int main(int argc, char const *argv[])
                                         numCols = stoi(dims.substr(dims.find('x')+1));
                                         isManualInputClosed = true;
                                         selectorType.close();
-
                                     }
                                 }
                             }
@@ -135,88 +120,96 @@ int main(int argc, char const *argv[])
                             selectorType.draw(inputChoice);
                             selectorType.display();
                         }
-                        // create dimensional matrix selector
+
+                      
                         if (isMatrixInput) {
-                            // Matrix Selector Section
-                            RenderWindow matrixSelector(VideoMode(600, 600), "Select Race Dimensions [MATRIX INPUT]", Style::Close);
-                            matrixSelector.setPosition(windowPosition);
-                            unsigned int maxRows = 50;
-                            unsigned int maxCols = 50;
-                            float cellWidth = matrixSelector.getSize().x / static_cast<float>(maxCols);
-                            float cellHeight = matrixSelector.getSize().y / static_cast<float>(maxRows);
+                        // Matrix Selector Section
+                        RenderWindow matrixSelector(VideoMode(600, 600), "Select Dimensions [MATRIX INPUT]", Style::Close);
+                        matrixSelector.setPosition(windowPosition);
+                        unsigned int maxRows = 50;
+                        unsigned int maxCols = 50;
+                        float cellWidth = matrixSelector.getSize().x / static_cast<float>(maxCols);
+                        float cellHeight = matrixSelector.getSize().y / static_cast<float>(maxRows);
 
-                            while (matrixSelector.isOpen()) {
-                                Event selectorEvent;
-                                while (matrixSelector.pollEvent(selectorEvent)) {
-                                    switch (selectorEvent.type) {
-                                        case Event::Closed:
+                        int selectedRow = -1;
+                        int selectedCol = -1;
+                        int highlightRow = -1;
+                        int highlightCol = -1;
+
+                        while (matrixSelector.isOpen()) {
+                            Event selectorEvent;
+                            while (matrixSelector.pollEvent(selectorEvent)) {
+                                switch (selectorEvent.type) {
+                                    case Event::Closed:
+                                        matrixSelector.close();
+                                        break;
+                                    case Event::MouseMoved:
+                                        // Update the highlighted cell when the mouse moves
+                                        highlightRow = static_cast<int>(selectorEvent.mouseMove.y / cellHeight);
+                                        highlightCol = static_cast<int>(selectorEvent.mouseMove.x / cellWidth);
+                                        break;
+                                    case Event::MouseButtonPressed:
+                                        if (selectorEvent.mouseButton.button == Mouse::Left) {
+                                            // Use the highlighted cell as the selected dimensions
+                                            if (highlightRow >= 0 && highlightCol >= 0) {
+                                                selectedRow = highlightRow;
+                                                selectedCol = highlightCol;
+                                                numRows = selectedRow + 1;
+                                                numCols = selectedCol + 1;
+                                            }
                                             matrixSelector.close();
-                                            break;
-                                        case Event::MouseButtonPressed:
-                                            if (selectorEvent.mouseButton.button == Mouse::Left) {
-                                                numRows = static_cast<int>(selectorEvent.mouseButton.y / cellHeight) + 1;
-                                                numCols = static_cast<int>(selectorEvent.mouseButton.x / cellWidth) + 1;
-                                                matrixSelector.close();
-                                                isMatrixSelectorClosed = true;
-                                            }
-                                            break;
-                                    }
+                                            isMatrixSelectorClosed = true;
+                                        }
+                                        break;
                                 }
-                                Vector2i mousePosition = Mouse::getPosition(matrixSelector);
-                                matrixSelector.clear(Color::White);
-                                for (unsigned int i = 0; i < maxRows; i++) {
-                                    for (unsigned int j = 0; j < maxCols; j++) {
-                                        RectangleShape cell(Vector2f(cellWidth, cellHeight));
-                                        cell.setPosition(j * cellWidth, i * cellHeight);
-                                        cell.setOutlineColor(Color::Black);
-                                        cell.setOutlineThickness(1.f);
+                            }
 
-                                        if (i * cellHeight <= mousePosition.y && j * cellWidth <= mousePosition.x &&
-                                            (i + 1) * cellHeight > mousePosition.y && (j + 1) * cellWidth > mousePosition.x) {
-                                            // highlight cells over entire matrix
-                                            for (int r = 0; r <= i; r++) {
-                                                for (int c = 0; c <= j; c++) {
-                                                    RectangleShape highlightCell(Vector2f(cellWidth, cellHeight));
-                                                    highlightCell.setPosition(c * cellWidth, r * cellHeight);
-                                                    highlightCell.setFillColor(Color::Blue);
-                                                    highlightCell.setOutlineColor(Color::Black);
-                                                    highlightCell.setOutlineThickness(1.f);
-                                                    matrixSelector.draw(highlightCell);
+                            matrixSelector.clear(Color(176, 224, 230));
+                            for (unsigned int i = 0; i < maxRows; i++) {
+                                for (unsigned int j = 0; j < maxCols; j++) {
+                                    RectangleShape cell(Vector2f(cellWidth, cellHeight));
+                                    cell.setPosition(j * cellWidth, i * cellHeight);
+                                    cell.setOutlineColor(Color::Black);
+                                    cell.setOutlineThickness(1.f);
 
-                                                }
-                                            }
-                                            // try to fix this later, display matrix size as player adjusts
-                                            string sizeText = to_string(i + 1) + "x" + to_string(j + 1);
-                                            // size
-                                            Text dimensionsText(sizeText, font, 24);
-                                            // color
-                                            dimensionsText.setFillColor(Color::Black);
-                                            // position
-                                            dimensionsText.setPosition(j * cellWidth, i * cellHeight);
-                                            matrixSelector.draw(dimensionsText);
-                                        }
-                                        else {
-                                            cell.setFillColor(Color::White);
-                                        }
+                                    if (i <= highlightRow && j <= highlightCol) {
+                                        RectangleShape highlightCell(Vector2f(cellWidth - 2.f, cellHeight - 2.f));
+                                        highlightCell.setPosition(j * cellWidth + 1.f, i * cellHeight + 1.f);
+                                        highlightCell.setFillColor(Color::Blue);
+                                        highlightCell.setOutlineColor(Color::Black);
+                                        highlightCell.setOutlineThickness(1.f);
+                                        matrixSelector.draw(highlightCell);
+                                    } else {
+                                        cell.setFillColor(Color(176, 224, 230));
                                         matrixSelector.draw(cell);
                                     }
                                 }
-                                matrixSelector.display();
                             }
-                            // end matrix selector
+
+                            // Draw the cell outlines after drawing the blue highlight area
+                            for (unsigned int i = 0; i < maxRows; i++) {
+                                for (unsigned int j = 0; j < maxCols; j++) {
+                                    RectangleShape cellOutline(Vector2f(cellWidth, cellHeight));
+                                    cellOutline.setPosition(j * cellWidth, i * cellHeight);
+                                    cellOutline.setFillColor(Color::Transparent);
+                                    cellOutline.setOutlineColor(Color::Black);
+                                    cellOutline.setOutlineThickness(1.f);
+                                    matrixSelector.draw(cellOutline);
+                                }
+                            }
+
+                            matrixSelector.display();
                         }
+                        // end matrix selector
                     }
-                    // run game (starting with Player 1)
-                    if (isMatrixSelectorClosed or isManualInputClosed)
-                    {
-                        // Enter edit mode for player 1
+
+                    }
+
+                    if (isMatrixSelectorClosed || isManualInputClosed) {
                         p1->buildBoard(numRows, numCols);
                         p1->editBoard(window, font);
                         window.setView(window.getDefaultView());
-                    }
-                    else if (event.key.code == Keyboard::F)
-                    {
-                        // Enter edit mode for player 1 based on file
+                    } else if (event.key.code == Keyboard::F) {
                         window.pollEvent(event);
                         fileName = querySelectorDEBUG(window, font, "Enter File Name (No Extension): ");
                         p1->buildBoard(fileName);
@@ -229,30 +222,14 @@ int main(int argc, char const *argv[])
         window.draw(mainMenuSprite);
         window.display();
     }
-    
 
     return 0;
 }
 
-std::vector<Vector2i> breadthFirstSearch(const Board& board, const Vector2i& start, const Vector2i& goal) {
-    // ... algorithm implementation ...
-    // Return the computed path as a vector of positions (Vector2i)
-    return std::vector<Vector2i>(); // An empty vector as a placeholder
-}
-
-// Function to implement the Depth-First Search algorithm
-std::vector<Vector2i> depthFirstSearch(const Board& board, const Vector2i& start, const Vector2i& goal) {
-    // ... algorithm implementation ...
-    // Return the computed path as a vector of positions (Vector2i)
-    return std::vector<Vector2i>(); // An empty vector as a placeholder
-}
+// ... breadthFirstSearch and depthFirstSearch functions ...
 
 string querySelectorDEBUG(RenderWindow& window, Font& font, string query)
 {
-    // In the final version this would be split into two routines
-    // Dimension selector would have a gui showing an interactive matrix (similar to the table insert function in ms word)
-    // Filename selector would be a drop down menu showing all of the files from files/
-
     Vector2f winCenter = ((Vector2f)window.getSize())/2.0f;
     Text fileSelect(query, font, 24);
     fileSelect.setOrigin(fileSelect.getLocalBounds().width/2.0, fileSelect.getLocalBounds().height/2.0);
@@ -267,28 +244,27 @@ string querySelectorDEBUG(RenderWindow& window, Font& font, string query)
         {
             switch (event.type)
             {
-            case Event::Closed:
-                window.close();
-                break;
-            
-            case Event::KeyPressed:
-                if (event.key.code == Keyboard::Enter)
-                {
-                    return input;
-                }
-                else if ((event.key.code == Keyboard::Backspace) && (input.size() > 0))
-                {
-                    input = input.substr(0, input.size()-1);
-                    fileSelect.setString(query + input);
-                }
-                break;
-            case Event::TextEntered:
-                if (isalnum(static_cast<char>(event.text.unicode)))
-                {
-                    input += static_cast<char>(event.text.unicode);
-                    fileSelect.setString(query + input);       
-                }  
-                break;
+                case Event::Closed:
+                    window.close();
+                    break;
+                case Event::KeyPressed:
+                    if (event.key.code == Keyboard::Enter)
+                    {
+                        return input;
+                    }
+                    else if ((event.key.code == Keyboard::Backspace) && (input.size() > 0))
+                    {
+                        input = input.substr(0, input.size()-1);
+                        fileSelect.setString(query + input);
+                    }
+                    break;
+                case Event::TextEntered:
+                    if (isalnum(static_cast<char>(event.text.unicode)))
+                    {
+                        input += static_cast<char>(event.text.unicode);
+                        fileSelect.setString(query + input);       
+                    }  
+                    break;
             }
         }
         window.draw(fileSelect);
@@ -302,5 +278,4 @@ string querySelectorDEBUG(RenderWindow& window, Font& font, string query)
     {
         return "10x10";
     }
-    
 }
