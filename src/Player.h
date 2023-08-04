@@ -3,6 +3,13 @@
 #include <string>
 #include <cmath>
 #include "Board.h"
+
+enum class PathfindingAlgorithm {
+    BreadthFirstSearch,
+    DepthFirstSearch,
+    None
+};
+
 class Player
 {   
     private:
@@ -10,6 +17,8 @@ class Player
         bool editing = false;
         int score = 0;
         Board board;
+        PathfindingAlgorithm selectedAlgorithm;
+        std::vector<sf::Vector2i> path;
     public:
         Player(std::string name);
         ~Player();
