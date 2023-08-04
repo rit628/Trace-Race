@@ -264,5 +264,4 @@ string querySelectorDEBUG(RenderWindow& window, Font& font, string query, sf::Sp
     {
         return "10x10";
     }
-    
 }
