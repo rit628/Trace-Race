@@ -491,7 +491,7 @@ bool Board::DFS()
 bool Board::BFS()
 {
     // O(V+E)
-    stack<Tile*> q;
+    queue<Tile*> q;
     map<int, Tile*> visited;
     Tile* currTile = this->start;
     if (currTile == nullptr)
@@ -503,7 +503,7 @@ bool Board::BFS()
     visited.emplace(currTile->id, currTile);
     while (!q.empty())
     {
-        currTile = q.top();
+        currTile = q.front();
         q.pop();
         for (auto tile : currTile->neighbors)
         {
