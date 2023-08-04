@@ -16,11 +16,11 @@ Player::~Player()
     this->board.reset();
 }
 
-void Player::onClick(Vector2i pos)
+void Player::onClick(Vector2i pos, char state)
 {
     if ((pos.x < this->board.numCols) && (pos.y < this->board.numRows))
     {
-        this->board.updateTile(pos.y, pos.x);
+        this->board.updateTile(pos.y, pos.x, state);
     }   
 }
 
@@ -130,6 +130,24 @@ void Player::editBoard(RenderWindow& window, Font& font)
                     else if (event.key.code == Keyboard::G)
                     {
                         this->board.generate(this->board.numRows, this->board.numCols);
+                    }
+                    else if (event.key.code == Keyboard::S)
+                    {
+                        coords = window.mapPixelToCoords(Mouse::getPosition(window));
+                        tileHover.x = floor(coords.x/board.tileDim);
+                        tileHover.y = floor(coords.y/board.tileDim);
+                        this->onClick(tileHover, 'S');
+                    }
+                    else if (event.key.code == Keyboard::F)
+                    {
+                        coords = window.mapPixelToCoords(Mouse::getPosition(window));
+                        tileHover.x = floor(coords.x/board.tileDim);
+                        tileHover.y = floor(coords.y/board.tileDim);
+                        this->onClick(tileHover, 'F');
+                    }
+                    else if (event.key.code == Keyboard::C)
+                    {
+                        this->board.makeConnected();
                     }
                     
                     else if (event.key.code == Keyboard::Escape)
