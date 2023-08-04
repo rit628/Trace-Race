@@ -3,7 +3,6 @@
 #include <string>
 #include <cmath>
 #include "Board.h"
-
 class Player
 {   
     private:

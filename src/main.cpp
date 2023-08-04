@@ -58,7 +58,7 @@ int main(int argc, char const *argv[])
 
     window.setFramerateLimit(360);
 
-      // music player
+    // music player
     MusicPlayer backgroundMusic;
 
     // load background / adjust scaling
@@ -122,6 +122,8 @@ int main(int argc, char const *argv[])
                         //TODO: CREATE MENU FOR INPUT SELECTION
                         RenderWindow selectorType(VideoMode(600,600), "Choose Dimensional Input", Style::Close);
                         selectorType.setFramerateLimit(360);
+                        sf::Vector2i windowPosition = window.getPosition();
+                        selectorType.setPosition(windowPosition);
                         Text inputChoice("f- Matrix Input\n" "d- Manual Input \n", font, 24);
                         inputChoice.setFillColor(Color::Black);
                         Vector2f winCenter = ((Vector2f)selectorType.getSize())/2.0f;
@@ -169,82 +171,8 @@ int main(int argc, char const *argv[])
                         if (isMatrixInput) {
                             // Matrix Selector Section
                             RenderWindow matrixSelector(VideoMode(600, 600), "Select Race Dimensions [MATRIX INPUT]", Style::Close);
-                            unsigned int maxRows = 50;
-                            unsigned int maxCols = 50;
-                            float cellWidth = matrixSelector.getSize().x / static_cast<float>(maxCols);
-                            float cellHeight = matrixSelector.getSize().y / static_cast<float>(maxRows);
-
-                            while (matrixSelector.isOpen()) {
-                                Event selectorEvent;
-                                while (matrixSelector.pollEvent(selectorEvent)) {
-                                    switch (selectorEvent.type) {
-                                        case Event::Closed:
-                                            matrixSelector.close();
-                                            break;
-
-                                        case Event::MouseButtonPressed:
-                                            // when size is selected, close menu
-                                            if (selectorEvent.mouseButton.button == Mouse::Left) {
-                                                numRows = static_cast<int>(selectorEvent.mouseButton.y / cellHeight) + 1;
-                                                numCols = static_cast<int>(selectorEvent.mouseButton.x / cellWidth) + 1;
-                                                matrixSelector.close();
-                                                isMatrixSelectorClosed = true;
-                                            }
-                                            break;
-                                    }
-                                    //TODO: MAKE MUSIC MUTABLE EVERYWHERE
-                                    switch (event.type){
-                                        // mute with m
-                                        case Event::KeyPressed:
-                                            if (event.key.code == Keyboard::M) {
-                                                backgroundMusic.toggleMute();
-                                            }
-                                            break;
-                                    }
-                                }
-                                Vector2i mousePositionMatrixSelector = Mouse::getPosition(matrixSelector);
-                                matrixSelector.clear(Color::White);
-                                // create grid
-                                for (unsigned int i = 0; i < maxRows; i++) {
-                                    for (unsigned int j = 0; j < maxCols; j++) {
-                                        RectangleShape cell(Vector2f(cellWidth, cellHeight));
-                                        cell.setPosition(j * cellWidth, i * cellHeight);
-                                        cell.setOutlineColor(Color::Black);
-                                        cell.setOutlineThickness(1.f);
-
-                                        if (i * cellHeight <= mousePositionMatrixSelector.y && j * cellWidth <= mousePositionMatrixSelector.x &&
-                                            (i + 1) * cellHeight > mousePositionMatrixSelector.y && (j + 1) * cellWidth > mousePositionMatrixSelector.x) {
-                                            // highlight cells over entire matrix as mouse rolls over
-                                            for (int r = 0; r <= i; r++) {
-                                                for (int c = 0; c <= j; c++) {
-                                                    RectangleShape highlightCell(Vector2f(cellWidth, cellHeight));
-                                                    highlightCell.setPosition(c * cellWidth, r * cellHeight);
-                                                    highlightCell.setFillColor(Color::Blue);
-                                                    highlightCell.setOutlineColor(Color::Black);
-                                                    highlightCell.setOutlineThickness(1.f);
-                                                    matrixSelector.draw(highlightCell);
-
-                                                }
-                                            }
-                                            // try to fix this later, display matrix size as player adjusts
-                                            string sizeText = to_string(i + 1) + "x" + to_string(j + 1);
-                                            // size
-                                            Text dimensionsText(sizeText, font, 24);
-                                            // color
-                                            dimensionsText.setFillColor(Color::Black);
-                                            // position
-                                            dimensionsText.setPosition(j * cellWidth, i * cellHeight);
-                                            matrixSelector.draw(dimensionsText);
-                                        }
-                                        else {
-                                            cell.setFillColor(Color::White);
-                                        }
-                                        matrixSelector.draw(cell);
-                                    }
-                                }
-                                matrixSelector.display();
-                            }
-                            // end matrix selector
+                            MatrixSelector matrixSelector1(50, 50);
+                            matrixSelector1.drawGrid(matrixSelector, numRows, numCols, isMatrixSelectorClosed);
                         }
                     }
                     // run game (starting with Player 1)
@@ -268,7 +196,6 @@ int main(int argc, char const *argv[])
                     // exit game
                     if (exitGameButton.isClicked(mousePosition)){
                         window.close();
-
                     }
                     break;
             }
