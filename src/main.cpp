@@ -346,6 +346,15 @@ void battle(RenderWindow& window, Player* p1, Player* p2)
                     {
                         return;
                     }
+                    else if (event.key.code == Keyboard::B)
+                    {
+                        cout << final.BFS() << endl;
+                    }
+                    else if (event.key.code == Keyboard::D)
+                    {
+                        cout << final.DFS() << endl;
+                    }
+                    
                     
                     break;
                     

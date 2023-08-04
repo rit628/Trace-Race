@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include <algorithm>
 #include <queue>
+#include <stack>
 
 using namespace std;
 using namespace sf;
@@ -452,4 +453,70 @@ void Board::makeConnected()
         cout << i.first << endl;
     }
     
+}
+
+bool Board::DFS()
+{
+    // O(V+E)
+    stack<Tile*> s;
+    map<int, Tile*> visited;
+    Tile* currTile = this->start;
+    if (currTile == nullptr)
+    {
+        return false;
+    }
+    
+    s.push(currTile);
+    visited.emplace(currTile->id, currTile);
+    while (!s.empty())
+    {
+        currTile = s.top();
+        s.pop();
+        for (auto tile : currTile->neighbors)
+        {
+            if ((visited.count(tile.second->id) == 0) && (!tile.second->isWall))
+            {
+                s.push(tile.second);
+                visited.emplace(tile.second->id, tile.second);
+            }
+            if (tile.second == this->finish)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool Board::BFS()
+{
+    // O(V+E)
+    stack<Tile*> q;
+    map<int, Tile*> visited;
+    Tile* currTile = this->start;
+    if (currTile == nullptr)
+    {
+        return false;
+    }
+    
+    q.push(currTile);
+    visited.emplace(currTile->id, currTile);
+    while (!q.empty())
+    {
+        currTile = q.top();
+        q.pop();
+        for (auto tile : currTile->neighbors)
+        {
+            if ((visited.count(tile.second->id) == 0) && (!tile.second->isWall))
+            {
+                q.push(tile.second);
+                visited.emplace(tile.second->id, tile.second);
+            }
+            if (tile.second == this->finish)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
 }

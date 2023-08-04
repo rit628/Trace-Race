@@ -29,4 +29,6 @@ class Board : public sf::Drawable
         void writeToFile(std::string fileName);
         void generate(unsigned int numRows = 0, unsigned int numCols = 0, int finishID = -1);
         void makeConnected();
+        bool DFS();
+        bool BFS();
 };
