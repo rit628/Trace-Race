@@ -13,7 +13,7 @@ class Player
     public:
         Player(std::string name);
         ~Player();
-        void onClick(sf::Vector2i pos);
+        void onClick(sf::Vector2i pos, char state = 'N');
         void buildBoard(unsigned int numRows, unsigned int numCols);
         void buildBoard(std::string fileName);
         void resetBoard(bool wall = false); // Function to reset the board
