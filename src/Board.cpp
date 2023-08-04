@@ -83,6 +83,51 @@ void Board::build(string fileName)
     this->tiles.at(finishID / numCols).at(finishID % numCols)->flip('F');
 }
 
+Board Board::combine(Board& RHS)
+{
+    Board combined;
+    combined.build(this->numRows*2, this->numCols);
+    for (int i = 0; i < numRows; i++)
+    {
+        for (int j = 0; j < numCols; j++)
+        {
+            combined.tiles.at(i).at(j)->isWall = !this->tiles.at(i).at(j)->isWall;
+            combined.tiles.at(i).at(j)->flip();
+        }
+    }
+    for (int i = 0; i < numRows; i++)
+    {
+        for (int j = 0; j < numCols; j++)
+        {
+            combined.tiles.at(i+numRows).at(j)->isWall = !RHS.tiles.at(i).at(j)->isWall;
+            combined.tiles.at(i+numRows).at(j)->flip();
+        }
+    }
+    combined.numRows *= 2;
+    combined.paths = this->paths;
+    combined.paths.insert(RHS.paths.begin(), RHS.paths.end());
+    int startID = this->start->id;
+    int endID = RHS.start->id;
+    combined.start = combined.tiles.at(startID / numCols).at(startID % numCols);
+    combined.finish = combined.tiles.at((endID /numCols) + numRows).at(endID % numCols);
+    combined.start->flip('S');
+    combined.finish->flip('F');
+    //combined.tiles.insert(combined.tiles.end(), RHS.tiles.begin(), RHS.tiles.end());
+    // 
+    // Changes textures on connection tiles
+    // combined.finish->isWall = true;
+    // combined.finish->flip();
+    // RHS.finish->isWall = true;
+    // RHS.finish->flip();
+
+    // combined.finish = RHS.start;
+    // RHS.finish = combined.start;
+    // combined.finish->flip('F');
+    // RHS.finish->flip('F');    
+
+    return combined;
+}
+
 void Board::resetTiles(bool isWall)
 {
     for (auto& row : tiles)
@@ -352,6 +397,11 @@ void Board::makeConnected()
     queue<Tile*> q;
     map<int, Tile*> visited;
     Tile* currTile = this->start;
+    if (currTile == nullptr)
+    {
+        return;
+    }
+    
     q.push(currTile);
     visited.emplace(currTile->id, currTile);
     while (!q.empty())

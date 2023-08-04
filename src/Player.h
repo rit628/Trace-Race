@@ -25,6 +25,7 @@ class Player
         void onClick(sf::Vector2i pos, char state = 'N');
         void buildBoard(unsigned int numRows, unsigned int numCols);
         void buildBoard(std::string fileName);
+        Board combineBoard(Player& p2);
         void resetBoard(bool wall = false); // Function to reset the board
         void editBoard(sf::RenderWindow& window, sf::Font& font);
         std::string getFileName(sf::RenderWindow& window, sf::Font& font);

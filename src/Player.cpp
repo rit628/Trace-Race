@@ -40,6 +40,11 @@ void Player::buildBoard(string fileName)
     this->board.build(fileName);
 }
 
+Board Player::combineBoard(Player& p2)
+{
+    return this->board.combine(p2.board);
+}
+
 void Player::resetBoard(bool wall)
 {
     this->board.resetTiles(wall);

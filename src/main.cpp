@@ -12,6 +12,7 @@ using namespace std;
 using namespace sf;
 
 string querySelectorDEBUG(RenderWindow& window, Font& font, string query, sf::Sprite backgroundSprite);
+void battle(RenderWindow& window, Player* p1, Player* p2);
 
 int main(int argc, char const *argv[])
 {
@@ -72,7 +73,8 @@ int main(int argc, char const *argv[])
     ButtonMaker loadGameButton(0.0f, 319.0f, 315.0f, 52.0f);
     ButtonMaker exitGameButton(477.0f, 477.0f, 106.0f, 36.0f);
 
-    Player* p1 = new Player("Debug");
+    Player* p1 = new Player("Player 1");
+    Player* p2 = new Player("Bot");
 
     while (window.isOpen())
     {
@@ -181,7 +183,10 @@ int main(int argc, char const *argv[])
                         // Enter edit mode for player 1
                         p1->buildBoard(numRows, numCols);
                         p1->editBoard(window, font);
+                        p2->buildBoard(numRows, numCols);
+                        p2->editBoard(window, font);
                         window.setView(window.getDefaultView());
+                        battle(window, p1, p2);                     
                     }
                     // pull load game menu
                     if (loadGameButton.isClicked(mousePosition))
@@ -191,6 +196,9 @@ int main(int argc, char const *argv[])
                         fileName = querySelectorDEBUG(window, font, "Enter File Name (No Extension): \n          ", loadMenuSprite);
                         p1->buildBoard(fileName);
                         p1->editBoard(window, font);
+                        p2->buildBoard(fileName);
+                        p2->editBoard(window, font);
+                        battle(window, p1, p2);
                         window.setView(window.getDefaultView());
                     }
                     // exit game
@@ -265,4 +273,61 @@ string querySelectorDEBUG(RenderWindow& window, Font& font, string query, sf::Sp
         return "10x10";
     }
     
+}
+
+void battle(RenderWindow& window, Player* p1, Player* p2)
+{
+    Board final = p1->combineBoard(*p2);
+    bool panning = false;
+    Vector2f m0, m1;
+    View camera = window.getDefaultView();
+    while (window.isOpen())
+    {
+        Event event;
+        window.clear(Color::Black);
+        
+        while (window.pollEvent(event))
+        {
+            switch (event.type)
+            {
+                case Event::Closed:
+                    window.close();
+                    break;
+                case Event::MouseButtonPressed:
+                    if (event.mouseButton.button == Mouse::Right)
+                    {
+                        panning = true;
+                        m0 = window.mapPixelToCoords(Mouse::getPosition(window));
+                    }
+                    break;
+                case Event::MouseButtonReleased:
+                    if (event.mouseButton.button == Mouse::Right)
+                    {
+                        panning = false;
+                    }
+                    break;
+                case Event::MouseMoved:
+                    if (panning)
+                    {
+                        m1 = window.mapPixelToCoords(Mouse::getPosition(window));
+                        camera.setCenter(camera.getCenter() + m0 - m1);
+                        camera.move(m0 - m1);
+                        window.setView(camera);
+                        m0 = window.mapPixelToCoords(Mouse::getPosition(window));
+                    }
+                    break;
+                case Event::KeyPressed:
+                    if (event.key.code == Keyboard::Escape)
+                    {
+                        return;
+                    }
+                    
+                    break;
+                    
+                    
+            }
+        }
+        window.draw(final);
+        window.display();
+    }
 }
