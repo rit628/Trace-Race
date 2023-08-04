@@ -112,14 +112,14 @@ void Player::editBoard(RenderWindow& window, Font& font)
         timerBox.getPosition().y + (timerBoxHeight - timerText.getLocalBounds().height) / 2);
 
     // Add this line before creating the sf::Text objects in the code
-    const int editorTextSize = 18; // Choose the desired size
+    const int editorTextSize = 14; // Choose the desired size
 
     // Replace the existing "editorText" definition with the following
-    sf::Text editorText("Editor Keybindings:\n\nLeft Click (M1)- Edit Grid Element\nRight Click (M2)- Pan Grid View\n"
-        "Scroll Wheel Up/Down- Zoom In/Out\nEnter- Save Map to File\nEscape- Return to Debug Menu\n", font, editorTextSize);
+    sf::Text editorText("Editor Keybindings:\n\nLeft Click (M1)- Edit Grid\nRight Click (M2)- Pan Grid\n"
+        "Scroll Wheel Up/Down- Zoom In/Out\nEnter- Save Map to File\nEscape- Return to Menu\nS- Set Starting Point\nF- Set Finish Point", font, editorTextSize);
     editorText.setOrigin(editorText.getLocalBounds().width / 2.0, editorText.getLocalBounds().height / 2.0);
     editorText.setFillColor(sf::Color::White);
-    editorText.setPosition(editorText.getLocalBounds().width - 50, editorText.getLocalBounds().height - 70);
+    editorText.setPosition(editorText.getLocalBounds().width + 10, editorText.getLocalBounds().height - 60);
 
     // Make the editorText bold
     editorText.setStyle(sf::Text::Bold);

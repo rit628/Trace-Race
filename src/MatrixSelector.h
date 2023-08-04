@@ -1,6 +1,3 @@
-//
-// Created by Catty on 8/2/2023.
-//
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
@@ -15,6 +12,11 @@ class MatrixSelector {
 private:
     unsigned int _maxRows, _maxCols, _numRows, _numCols;
     float _cellWidth, _cellHeight;
+    sf::Text _liveDimensionsText;
+    std::string _liveDimensionsStr;
+    sf::Text liveDimensions;
+    sf::Font _font;
+    const float _extraHeight = 50.f;
 
 public:
     MatrixSelector(unsigned int maxRows, unsigned int maxCols);

@@ -19,12 +19,12 @@ public:
         backgroundMusic.openFromFile("files/music/Comfort.ogg");
         backgroundMusic.setLoop(true);
         backgroundMusic.play();
-        backgroundMusic.setVolume(100);
+        backgroundMusic.setVolume(50);
     }
     void toggleMute(){
         // unmute
         if (isMuted) {
-            backgroundMusic.setVolume(100);
+            backgroundMusic.setVolume(50);
             isMuted = false;
         }
         // mute

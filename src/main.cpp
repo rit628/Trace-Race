@@ -18,8 +18,8 @@ int main(int argc, char const *argv[])
     Tile::loadTextures();
     Font font;
     font.loadFromFile("files/font.ttf");
-    //    unsigned int monitorWidth = VideoMode::getDesktopMode().width;
-    //    unsigned int monitorHeight = VideoMode::getDesktopMode().height;
+    unsigned int monitorWidth = VideoMode::getDesktopMode().width;
+    unsigned int monitorHeight = VideoMode::getDesktopMode().height;
     unsigned int numRows = 10;
     unsigned int numCols = 10;
     string fileName = "map";
@@ -52,9 +52,9 @@ int main(int argc, char const *argv[])
     RenderWindow window(VideoMode(mainMenuTexture.getSize().x, mainMenuTexture.getSize().y), "Trace Race", Style::Default);
 
         // Set the initial window position to the center of the screen
-    //    sf::Vector2i screenCenter(monitorWidth / 2, monitorHeight / 2);
-    //    sf::Vector2i windowPosition(screenCenter.x - window.getSize().x / 2, screenCenter.y - window.getSize().y / 2);
-    //    window.setPosition(windowPosition);
+    sf::Vector2i screenCenter(monitorWidth / 2, monitorHeight / 2);
+    sf::Vector2i windowPosition(screenCenter.x - window.getSize().x / 2, screenCenter.y - window.getSize().y / 2);
+    window.setPosition(windowPosition);
 
     window.setFramerateLimit(360);
 
@@ -121,6 +121,7 @@ int main(int argc, char const *argv[])
                         // input selection
                         //TODO: CREATE MENU FOR INPUT SELECTION
                         RenderWindow selectorType(VideoMode(600,600), "Choose Dimensional Input", Style::Close);
+                        selectorType.setPosition(windowPosition);
                         selectorType.setFramerateLimit(360);
                         sf::Vector2i windowPosition = window.getPosition();
                         selectorType.setPosition(windowPosition);
@@ -158,19 +159,28 @@ int main(int argc, char const *argv[])
                                         dims = querySelectorDEBUG(selectorType, font, "Enter Dimensions (RxC): \n           ", manualMenuSprite);
                                         numRows = stoi(dims.substr(0, dims.find('x')));
                                         numCols = stoi(dims.substr(dims.find('x')+1));
+                                        // Validate dimensions
+                                        if (numRows < 3 || numCols < 3)
+                                        {
+                                            cout << "Error: Dimensions must be greater than or equal to 3x3." << endl;
+                                            isManualInputClosed = false; // Set to false to prompt input again
+                                            continue;
+                                        }
                                         isManualInputClosed = true;
                                         selectorType.close();
                                     }
                                 }
                             }
-//                            selectorType.clear(Color::White);
+                            selectorType.clear(Color::White);
                             selectorType.draw(dimensionMenuSprite);
                             selectorType.display();
                         }
                         // create dimensional matrix selector
                         if (isMatrixInput) {
                             // Matrix Selector Section
-                            RenderWindow matrixSelector(VideoMode(600, 600), "Select Race Dimensions [MATRIX INPUT]", Style::Close);
+                            const unsigned int extraHeight = 50;
+                            RenderWindow matrixSelector(VideoMode(600, 600 + extraHeight), "Select Dimensions [MATRIX INPUT]", Style::Close);
+                            matrixSelector.setPosition(windowPosition);
                             MatrixSelector matrixSelector1(50, 50);
                             matrixSelector1.drawGrid(matrixSelector, numRows, numCols, isMatrixSelectorClosed);
                         }
