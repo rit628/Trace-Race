@@ -2,6 +2,7 @@
 #include <SFML/Audio.hpp>
 #include <map>
 #include <string>
+#include <filesystem>
 #include "Player.h"
 #include "ButtonMaker.h"
 #include "MusicPlayer.h"
@@ -11,7 +12,9 @@
 using namespace std;
 using namespace sf;
 
-string querySelectorDEBUG(RenderWindow& window, Font& font, string query, sf::Sprite backgroundSprite);
+string loadMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite);
+void dimensionMenu(RenderWindow& window, const sf::Sprite& backgroundSprite, sf::Sprite& manualMenuSprite, bool& isMatrixClosed, bool& isManualClosed, unsigned int& numRows, unsigned int& numCols, Font& font);
+string manualMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite);
 void battle(RenderWindow& window, Player* p1, Player* p2);
 
 int main(int argc, char const *argv[])
@@ -97,7 +100,6 @@ int main(int argc, char const *argv[])
 
                 mainMenuSprite.setScale(scaleX, scaleY);
 
-
                 // move clickables
                 newGameButton.updateScale(scaleX, scaleY);
             }
@@ -117,74 +119,17 @@ int main(int argc, char const *argv[])
                     break;
 
                 case Event::MouseButtonPressed:
-
-                    if (newGameButton.isClicked(mousePosition))
-                                    {
-                        // input selection
-                        //TODO: CREATE MENU FOR INPUT SELECTION
-                        RenderWindow selectorType(VideoMode(600,600), "Choose Dimensional Input", Style::Close);
-                        selectorType.setPosition(windowPosition);
-                        selectorType.setFramerateLimit(360);
-                        sf::Vector2i windowPosition = window.getPosition();
-                        selectorType.setPosition(windowPosition);
-                        Text inputChoice("f- Matrix Input\n" "d- Manual Input \n", font, 24);
-                        inputChoice.setFillColor(Color::Black);
-                        Vector2f winCenter = ((Vector2f)selectorType.getSize())/2.0f;
-                        inputChoice.setOrigin(inputChoice.getLocalBounds().width/2.0, inputChoice.getLocalBounds().height/2.0);
-                        inputChoice.setPosition(winCenter);
-
+                    // start new game
+                    if (newGameButton.isClicked(mousePosition)){
                         bool isMatrixInput = false;
+                        dimensionMenu(window, dimensionMenuSprite, manualMenuSprite, isMatrixInput, isManualInputClosed, numRows, numCols, font);
+                        window.setFramerateLimit(360);
 
-                        while (selectorType.isOpen()) {
-                            Event inputEvent;
-
-
-                            while (selectorType.pollEvent(inputEvent)) {
-                                if (inputEvent.type == Event::Closed) {
-                                    selectorType.close();
-                                }
-                                // mute with m
-                                if (inputEvent.type == Event::KeyPressed) {
-                                    if (inputEvent.key.code == Keyboard::M) {
-                                        backgroundMusic.toggleMute();
-                                    }
-                                }
-                                // f = select matrix input
-                                if (inputEvent.type == Event::KeyPressed) {
-                                    if (inputEvent.key.code == Keyboard::F) {
-                                        isMatrixInput = true;
-                                        selectorType.close();
-                                    }
-                                        // d = manually enter dimensions
-                                    else if (inputEvent.key.code == Keyboard::D) {
-                                        selectorType.pollEvent(event);
-                                        dims = querySelectorDEBUG(selectorType, font, "Enter Dimensions (RxC): \n           ", manualMenuSprite);
-                                        numRows = stoi(dims.substr(0, dims.find('x')));
-                                        numCols = stoi(dims.substr(dims.find('x')+1));
-                                        // Validate dimensions
-                                        if (numRows < 3 || numCols < 3)
-                                        {
-                                            cout << "Error: Dimensions must be greater than or equal to 3x3." << endl;
-                                            isManualInputClosed = false; // Set to false to prompt input again
-                                            continue;
-                                        }
-                                        isManualInputClosed = true;
-                                        selectorType.close();
-                                    }
-                                }
-                            }
-                            selectorType.clear(Color::White);
-                            selectorType.draw(dimensionMenuSprite);
-                            selectorType.display();
-                        }
                         // create dimensional matrix selector
                         if (isMatrixInput) {
                             // Matrix Selector Section
-                            const unsigned int extraHeight = 50;
-                            RenderWindow matrixSelector(VideoMode(600, 600 + extraHeight), "Select Dimensions [MATRIX INPUT]", Style::Close);
-                            matrixSelector.setPosition(windowPosition);
                             MatrixSelector matrixSelector1(50, 50);
-                            matrixSelector1.drawGrid(matrixSelector, numRows, numCols, isMatrixSelectorClosed);
+                            matrixSelector1.drawGrid(window, numRows, numCols, isMatrixSelectorClosed);
                         }
                     }
                     // run game (starting with Player 1)
@@ -199,12 +144,13 @@ int main(int argc, char const *argv[])
                         window.setView(window.getDefaultView());
                         battle(window, p1, p2);                     
                     }
-                    // pull load game menu
+                    // load game menu
                     if (loadGameButton.isClicked(mousePosition))
                     {
                         // Enter edit mode for player 1 based on file
                         window.pollEvent(event);
-                        fileName = querySelectorDEBUG(window, font, "Enter File Name (No Extension): \n          ", loadMenuSprite);
+                        fileName = loadMenu(window, font, "Enter File Name (No Extension): \n          ",
+                                            loadMenuSprite);
                         p1->buildBoard(fileName);
                         p1->editBoard(window, font);
                         p2->buildBoard(fileName);
@@ -227,11 +173,9 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
-string querySelectorDEBUG(RenderWindow& window, Font& font, string query, sf::Sprite backgroundSprite)
+string loadMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite)
 {
-    // In the final version this would be split into two routines
-    // Dimension selector would have a gui showing an interactive matrix (similar to the table insert function in ms word)
-    // Filename selector would be a drop down menu showing all of the files from files/
+    // TODO: add dropdown menu for current files
 
     Vector2f winCenter = ((Vector2f)window.getSize())/2.0f;
     Text fileSelect(query, font, 24);
@@ -250,7 +194,7 @@ string querySelectorDEBUG(RenderWindow& window, Font& font, string query, sf::Sp
             case Event::Closed:
                 window.close();
                 break;
-            
+
             case Event::KeyPressed:
                 if (event.key.code == Keyboard::Enter)
                 {
@@ -266,8 +210,8 @@ string querySelectorDEBUG(RenderWindow& window, Font& font, string query, sf::Sp
                 if (isalnum(static_cast<char>(event.text.unicode)))
                 {
                     input += static_cast<char>(event.text.unicode);
-                    fileSelect.setString(query + input);       
-                }  
+                    fileSelect.setString(query + input);
+                }
                 break;
             }
         }
@@ -277,13 +221,98 @@ string querySelectorDEBUG(RenderWindow& window, Font& font, string query, sf::Sp
     }
     if (query == "Enter File Name (No Extension): ")
     {
+
         return "map";
     }
     else
     {
         return "10x10";
     }
-    
+}
+
+void dimensionMenu(RenderWindow& window, const sf::Sprite& backgroundSprite, sf::Sprite& manualMenuSprite, bool& isMatrixClosed, bool& isManualClosed, unsigned int& numRows, unsigned int& numCols, Font& font)
+{
+    while (window.isOpen())
+    {
+        window.clear(Color::Cyan);
+        Event event;
+        while (window.pollEvent(event))
+        {
+            switch (event.type)
+            {
+                case Event::Closed:
+                    window.close();
+                    break;
+
+                case Event::KeyPressed:
+                    if (event.key.code == Keyboard::F)
+                    {
+                        isMatrixClosed = true;
+                        return;
+                    }
+                    else if (event.key.code == Keyboard::D)
+                    {
+                        window.pollEvent(event);
+                        string dims = manualMenu(window, font, "Enter Dimensions (RxC): \n           ",
+                                                        manualMenuSprite);
+                        numRows = stoi(dims.substr(0, dims.find('x')));
+                        numCols = stoi(dims.substr(dims.find('x')+1));
+                        isManualClosed = true;
+                        return;
+                    }
+                    break;
+            }
+        }
+        window.draw(backgroundSprite);
+        window.display();
+    }
+}
+
+string manualMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite)
+{
+    Vector2f winCenter = ((Vector2f)window.getSize())/2.0f;
+    Text fileSelect(query, font, 24);
+    fileSelect.setOrigin(fileSelect.getLocalBounds().width/2.0, fileSelect.getLocalBounds().height/2.0);
+    fileSelect.setFillColor(Color::White);
+    fileSelect.setPosition(winCenter);
+    string input;
+    while (window.isOpen())
+    {
+        window.clear(Color::Cyan);
+        Event event;
+        while (window.pollEvent(event))
+        {
+            switch (event.type)
+            {
+                case Event::Closed:
+                    window.close();
+                    break;
+
+                case Event::KeyPressed:
+                    if (event.key.code == Keyboard::Enter)
+                    {
+                        return input;
+                    }
+                    else if ((event.key.code == Keyboard::Backspace) && (input.size() > 0))
+                    {
+                        input = input.substr(0, input.size()-1);
+                        fileSelect.setString(query + input);
+                    }
+                    break;
+                case Event::TextEntered:
+                    if (isalnum(static_cast<char>(event.text.unicode)))
+                    {
+                        input += static_cast<char>(event.text.unicode);
+                        fileSelect.setString(query + input);
+                    }
+                    break;
+            }
+        }
+        window.draw(backgroundSprite);
+        window.draw(fileSelect);
+        window.display();
+    }
+    return "";
 }
 
 void battle(RenderWindow& window, Player* p1, Player* p2)

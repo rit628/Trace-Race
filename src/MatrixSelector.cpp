@@ -63,8 +63,8 @@ void MatrixSelector::drawGrid(sf::RenderWindow& window, unsigned int& numRows, u
                             numRows = selectedRow + 1;
                             numCols = selectedCol + 1;
                         }
-                        window.close();
                         isClosed = true;
+                        return;
                     }
                     break;
             }
