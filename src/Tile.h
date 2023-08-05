@@ -8,7 +8,7 @@ enum class Direction {N, E, S, W};
 class Tile : public sf::Drawable
 {
     private:
-        static sf::Texture wall, path, start, finish;
+        static sf::Texture wall, path, start, finish, p1, p2, overlap;
         std::vector<sf::Sprite> sprites;
     public:
         bool isWall;
@@ -20,4 +20,5 @@ class Tile : public sf::Drawable
         void draw(sf::RenderTarget& target, sf::RenderStates states) const;
         void flip(char state = 'N');
         void addNeighbor(Direction d, Tile* tile);
+        void updateTexture(int player);
 };

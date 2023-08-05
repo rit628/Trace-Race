@@ -455,12 +455,12 @@ void Board::makeConnected()
     
 }
 
-bool Board::DFS()
+bool Board::DFS(Tile* source, Tile* target, int player, atomic_bool& raceEnded)
 {
     // O(V+E)
     stack<Tile*> s;
     map<int, Tile*> visited;
-    Tile* currTile = this->start;
+    Tile* currTile = source;
     if (currTile == nullptr)
     {
         return false;
@@ -468,7 +468,7 @@ bool Board::DFS()
     
     s.push(currTile);
     visited.emplace(currTile->id, currTile);
-    while (!s.empty())
+    while ((!s.empty()) && (!raceEnded))
     {
         currTile = s.top();
         s.pop();
@@ -479,21 +479,26 @@ bool Board::DFS()
                 s.push(tile.second);
                 visited.emplace(tile.second->id, tile.second);
             }
-            if (tile.second == this->finish)
+            if (currTile == target)
             {
+                raceEnded = true;
                 return true;
             }
+        }
+        if (currTile != source)
+        {
+            currTile->updateTexture(player);
         }
     }
     return false;
 }
 
-bool Board::BFS()
+bool Board::BFS(Tile* source, Tile* target, int player, atomic_bool& raceEnded)
 {
     // O(V+E)
     queue<Tile*> q;
     map<int, Tile*> visited;
-    Tile* currTile = this->start;
+    Tile* currTile = source;
     if (currTile == nullptr)
     {
         return false;
@@ -501,7 +506,7 @@ bool Board::BFS()
     
     q.push(currTile);
     visited.emplace(currTile->id, currTile);
-    while (!q.empty())
+    while ((!q.empty()) && (!raceEnded))
     {
         currTile = q.front();
         q.pop();
@@ -512,11 +517,16 @@ bool Board::BFS()
                 q.push(tile.second);
                 visited.emplace(tile.second->id, tile.second);
             }
-            if (tile.second == this->finish)
+            if (currTile == target)
             {
+                raceEnded = true;
                 return true;
             }
         }
+        if (currTile != source)
+        {
+            currTile->updateTexture(player);
+        }        
     }
     return false;
 }

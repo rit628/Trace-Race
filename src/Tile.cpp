@@ -7,6 +7,9 @@ Texture Tile::wall;
 Texture Tile::path;
 Texture Tile::start;
 Texture Tile::finish;
+Texture Tile::p1;
+Texture Tile::p2;
+Texture Tile::overlap;
 
 void Tile::loadTextures()
 {
@@ -14,6 +17,9 @@ void Tile::loadTextures()
     path.loadFromFile("files/images/path.png");
     start.loadFromFile("files/images/start.png");
     finish.loadFromFile("files/images/finish.png");
+    p1.loadFromFile("files/images/p1.png");
+    p2.loadFromFile("files/images/p2.png");
+    overlap.loadFromFile("files/images/overlap.png");
 }
 
 Tile::Tile(unsigned int x, unsigned int y, unsigned int id, bool isWall) : id(id), coords(x, y)
@@ -61,4 +67,30 @@ void Tile::addNeighbor(Direction d, Tile* tile)
     Direction opposite = (d == Direction::N) ? Direction::S : Direction::E;
     this->neighbors.emplace(d, tile);
     tile->neighbors.emplace(opposite, this);
+}
+
+void Tile::updateTexture(int player)
+{
+    if (player == 1)
+    {
+        if (this->sprites.at(0).getTexture() == &Tile::p2)
+        {
+            this->sprites.at(0).setTexture(overlap);
+        }
+        else
+        {
+            this->sprites.at(0).setTexture(p1);
+        }
+    }
+    else
+    {
+        if (this->sprites.at(0).getTexture() == &Tile::p1)
+        {
+            this->sprites.at(0).setTexture(overlap);
+        }
+        else
+        {
+            this->sprites.at(0).setTexture(p2);
+        }
+    }
 }

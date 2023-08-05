@@ -8,6 +8,8 @@
 #include "MusicPlayer.h"
 #include "MatrixSelector.h"
 #include "iostream"
+#include <thread>
+#include <atomic>
 
 using namespace std;
 using namespace sf;
@@ -16,6 +18,7 @@ string loadMenu(RenderWindow& window, Font& font, const string& query, const sf:
 void dimensionMenu(RenderWindow& window, const sf::Sprite& backgroundSprite, sf::Sprite& manualMenuSprite, bool& isMatrixClosed, bool& isManualClosed, unsigned int& numRows, unsigned int& numCols, Font& font);
 string manualMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite);
 void battle(RenderWindow& window, Player* p1, Player* p2);
+void race(Board& b);
 
 int main(int argc, char const *argv[])
 {
@@ -375,13 +378,18 @@ void battle(RenderWindow& window, Player* p1, Player* p2)
                     {
                         return;
                     }
+                    else if (event.key.code == Keyboard::R)
+                    {
+                        race(final);
+                    }
+                    
                     else if (event.key.code == Keyboard::B)
                     {
-                        cout << final.BFS() << endl;
+                        //cout << final.BFS(final.start, final.finish, 1) << endl;
                     }
                     else if (event.key.code == Keyboard::D)
                     {
-                        cout << final.DFS() << endl;
+                        //cout << final.DFS(final.start, final.finish, 2) << endl;
                     }
                     
                     
@@ -393,4 +401,13 @@ void battle(RenderWindow& window, Player* p1, Player* p2)
         window.draw(final);
         window.display();
     }
+}
+
+void race(Board& b)
+{
+    atomic_bool raceFlag{false};
+    thread p1T(&Board::BFS, b, b.start, b.finish, 1, std::ref(raceFlag));
+    thread p2T(&Board::DFS, b, b.finish, b.start, 0, std::ref(raceFlag));
+    p1T.join();
+    p2T.join();
 }
