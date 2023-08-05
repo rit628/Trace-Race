@@ -191,7 +191,8 @@ int main(int argc, char const *argv[])
         window.display();
     }
     
-
+    delete p1;
+    delete p2;
     return 0;
 }
 

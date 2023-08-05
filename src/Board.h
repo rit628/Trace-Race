@@ -21,6 +21,7 @@ class Board : public sf::Drawable
         unsigned int numRows;
         Tile* start = nullptr;
         Tile* finish = nullptr;
+        ~Board();
         void build(unsigned int numCols, unsigned int numRows);
         std::pair<int, int> build(std::string fileName);
         void setFinish(unsigned int col);

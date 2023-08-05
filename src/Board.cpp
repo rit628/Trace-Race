@@ -14,6 +14,11 @@ using namespace sf;
 
 default_random_engine Board::gen;
 
+Board::~Board()
+{
+    this->reset();
+}
+
 void Board::build(unsigned int numRows, unsigned int numCols)
 {
     this->reset();
