@@ -348,7 +348,7 @@ void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
     Vector2i pixel;
     sf::View camera(sf::FloatRect(0, 0, 250, 250));
     View dflt = window.getDefaultView();
-    window.setSize(Vector2u(window.getSize().x*1.75, window.getSize().y*1.75));
+    window.setSize(Vector2u(window.getSize().x*1.5, window.getSize().y*1.5));
     dflt.setSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
     window.setView(dflt);
 
@@ -446,7 +446,7 @@ void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
                     if ((event.key.code == Keyboard::Escape) || (event.key.code == Keyboard::Enter))
                     {
                         View dflt = window.getDefaultView();
-                        window.setSize(Vector2u(window.getSize().x/1.75, window.getSize().y/1.75));
+                        window.setSize(Vector2u(window.getSize().x/1.5, window.getSize().y/1.5));
                         dflt.setSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
                         window.setView(dflt);
                         return;

@@ -201,7 +201,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
 
     // Set initial background color based on the turn variable
     window.clear((turn == 1) ? backgroundColorPlayer1 : backgroundColorPlayer2);
-    window.setSize(Vector2u(window.getSize().x*1.75, window.getSize().y*1.75));
+    window.setSize(Vector2u(window.getSize().x*1.5, window.getSize().y*1.5));
     dflt.setSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
     window.setView(dflt);
     bool init = false;
@@ -231,7 +231,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
                         {
                             this->runAlgorithmSelectionWindow(window, font);
                         }
-                        window.setSize(Vector2u(window.getSize().x/1.75, window.getSize().y/1.75));
+                        window.setSize(Vector2u(window.getSize().x/1.5, window.getSize().y/1.5));
                         dflt.setSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
                         window.setView(dflt);
                         fileName = getFileName(window, font);
@@ -263,7 +263,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
                         {
                             this->runAlgorithmSelectionWindow(window, font);
                         }
-                        window.setSize(Vector2u(window.getSize().x/1.75, window.getSize().y/1.75));
+                        window.setSize(Vector2u(window.getSize().x/1.5, window.getSize().y/1.5));
                         dflt.setSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
                         window.setView(dflt);
                         return this->board.finish->id % this->board.numCols;
