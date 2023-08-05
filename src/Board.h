@@ -11,17 +11,18 @@
 class Board : public sf::Drawable
 {
     private:
-        static std::default_random_engine gen;
         std::vector<std::vector<Tile*>> tiles;
         std::map<int, Tile*> paths;
     public:
+        static std::default_random_engine gen;
         const unsigned int tileDim = 32;
         unsigned int numCols;
         unsigned int numRows;
         Tile* start = nullptr;
         Tile* finish = nullptr;
         void build(unsigned int numCols, unsigned int numRows);
-        void build(std::string fileName);
+        std::pair<int, int> build(std::string fileName);
+        void setFinish(unsigned int col);
         Board combine(Board& RHS);
         void resetTiles(bool isWall);
         void reset();

@@ -5,6 +5,7 @@
 #include <string>
 #include <SFML/Window/Keyboard.hpp>
 #include <iostream>
+#include <utility>
 
 using namespace std;
 using namespace sf;
@@ -69,9 +70,9 @@ void Player::buildBoard(unsigned int numRows, unsigned int numCols)
     this->board.build(numRows, numCols);
 }
 
-void Player::buildBoard(string fileName)
+pair<int, int> Player::buildBoard(string fileName)
 {
-    this->board.build(fileName);
+    return this->board.build(fileName);
 }
 
 Board Player::combineBoard(Player& p2)
@@ -88,11 +89,21 @@ void Player::resetBoard(bool wall)
 unsigned int Player::generateBoard(unsigned int numRows, unsigned int numCols, int finishCol)
 {
     // Add random algo choice
+    uniform_int_distribution<int> coinFlip(0,1);
+    int result = coinFlip(this->board.gen);
+    if (result == 0)
+    {
+        this->selectedAlgorithm = &Board::DFS;
+    }
+    else
+    {
+        this->selectedAlgorithm = &Board::BFS;
+    }
     this->board.generate(numRows, numCols, finishCol);
     return this->board.finish->id;
 }
 
-unsigned int Player::editBoard(RenderWindow& window, Font& font)
+unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
 {
 //    sf::Vector2i screenCenter(sf::VideoMode::getDesktopMode().width / 2, sf::VideoMode::getDesktopMode().height / 2);
 //    sf::Vector2i windowPosition(screenCenter.x - window.getSize().x / 2, screenCenter.y - window.getSize().y / 2);
@@ -100,7 +111,6 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font)
     bool panning = false;
     bool editing = false;
     int selectedOption = -1; // Default to no option selected
-    bool isAlgorithmSelectionWindowOpen = false;
 
     Vector2i pixel;
     Vector2i tileHover;
@@ -137,7 +147,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font)
     chooseAlgorithmText.setPosition(chooseAlgorithmButton.getPosition().x + 30 + (buttonWidth - (chooseAlgorithmText.getLocalBounds().width)) / 2,
         chooseAlgorithmButton.getPosition().y + (buttonHeight - chooseAlgorithmText.getLocalBounds().height) / 2);
 
-    float timer = 30.0f;
+    float timer = 60.0f;
     bool isTimerRunning = true;
     sf::Clock clock;
     const int timerBoxWidth = 240;
@@ -167,6 +177,12 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font)
 
     const float minCameraY = window.getSize().y - timerBoxHeight - 20;
 
+    // Sets finishing column if player is going second to ensure connection is made
+    if (finishCol != -1)
+    {
+        this->board.setFinish(finishCol);
+    }
+    
     while (window.isOpen())
     {
         window.clear(sf::Color(173, 216, 230));
@@ -188,13 +204,18 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font)
                         this->board.clean();
                         if (!this->board.isValid())
                         {
-                            this->board.generate(this->board.numRows, this->board.numCols);
+                            this->board.generate(this->board.numRows, this->board.numCols, finishCol);
                         }
+                        while (this->selectedAlgorithm == nullptr)
+                        {
+                            this->runAlgorithmSelectionWindow(window, font);
+                        }
+                        
                         return this->board.finish->id % this->board.numCols;
                     }
                     else if (event.key.code == Keyboard::G)
                     {
-                        this->board.generate(this->board.numRows, this->board.numCols);
+                        this->board.generate(this->board.numRows, this->board.numCols, finishCol);
                     }
                     else if (event.key.code == Keyboard::C)
                     {
@@ -206,14 +227,18 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font)
                         this->board.clean();
                         if (!this->board.isValid())
                         {
-                            this->board.generate(this->board.numRows, this->board.numCols);
+                            this->board.generate(this->board.numRows, this->board.numCols, finishCol);
+                        }
+                        while (this->selectedAlgorithm == nullptr)
+                        {
+                            this->runAlgorithmSelectionWindow(window, font);
                         }
                         return this->board.finish->id % this->board.numCols;
                     }
                     break;
 
             case Event::MouseButtonPressed:
-                if (event.mouseButton.button == Mouse::Left)
+                if ((event.mouseButton.button == Mouse::Left) && (isTimerRunning))
                 {
                     editing = true;
                     coords = window.mapPixelToCoords(Vector2i(event.mouseButton.x, event.mouseButton.y));
@@ -233,78 +258,8 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font)
                     else if (chooseAlgorithmArea.contains(coords))
                     {
                         // Show the algorithm selection window
-                        isAlgorithmSelectionWindowOpen = true;
-                        RenderWindow algorithmSelectionWindow(VideoMode(200, 100), "Choose Algorithm", Style::Titlebar | Style::Close);
-                        algorithmSelectionWindow.setPosition(getCenteredPosition(window, Vector2u(200, 100)));
-                        algorithmSelectionWindow.setFramerateLimit(60);
-
-                        while (algorithmSelectionWindow.isOpen())
-                        {
-                            Event algorithmEvent;
-                            while (algorithmSelectionWindow.pollEvent(algorithmEvent))
-                            {
-                                switch (algorithmEvent.type)
-                                {
-                                case Event::Closed:
-                                    algorithmSelectionWindow.close();
-                                    break;
-
-                                case Event::MouseButtonPressed:
-                                    if (algorithmEvent.mouseButton.button == Mouse::Left)
-                                    {
-                                        // Check if Option 1 is clicked
-                                        if (algorithmEvent.mouseButton.x >= 0 && algorithmEvent.mouseButton.x <= 200 &&
-                                            algorithmEvent.mouseButton.y >= 0 && algorithmEvent.mouseButton.y <= 50)
-                                        {
-                                            cout << "Breadth-first search chosen" << endl;
-                                            selectedAlgorithm = &Board::BFS;
-
-                                            algorithmSelectionWindow.close();
-                                        }
-                                        // Check if Option 2 is clicked
-                                        else if (algorithmEvent.mouseButton.x >= 0 && algorithmEvent.mouseButton.x <= 200 &&
-                                            algorithmEvent.mouseButton.y >= 50 && algorithmEvent.mouseButton.y <= 100)
-                                        {
-                                            cout << "Depth-first search chosen" << endl;
-                                            selectedAlgorithm = &Board::DFS;
-
-                                            algorithmSelectionWindow.close();
-                                        }
-                                    }
-                                    break;
-                                }
-
-                                algorithmSelectionWindow.clear(Color(173, 216, 230));
-
-                                // Draw Option 1
-                                RectangleShape option1Rect(Vector2f(200, 50));
-                                option1Rect.setFillColor(Color(66, 135, 245));
-                                algorithmSelectionWindow.draw(option1Rect);
-
-                                Text option1Text("Breadth-first", font, 18);
-                                option1Text.setFillColor(Color::White);
-                                option1Text.setOrigin(option1Text.getLocalBounds().width / 2.0f, option1Text.getLocalBounds().height / 2.0f);
-                                option1Text.setPosition(100, 25);
-                                algorithmSelectionWindow.draw(option1Text);
-
-                                // Draw Option 2
-                                RectangleShape option2Rect(Vector2f(200, 50));
-                                option2Rect.setFillColor(Color(66, 135, 245));
-                                option2Rect.setPosition(0, 50);
-                                algorithmSelectionWindow.draw(option2Rect);
-
-                                Text option2Text("Depth-first", font, 18);
-                                option2Text.setFillColor(Color::White);
-                                option2Text.setOrigin(option2Text.getLocalBounds().width / 2.0f, option2Text.getLocalBounds().height / 2.0f);
-                                option2Text.setPosition(100, 75);
-                                algorithmSelectionWindow.draw(option2Text);
-
-                                algorithmSelectionWindow.display();
-                            }
-                        }
-
-
-                        isAlgorithmSelectionWindowOpen = false;
+                        this->runAlgorithmSelectionWindow(window, font);
+                        deltaTime = clock.restart().asSeconds();
                     }
                     window.setView(camera);
                 }
@@ -365,20 +320,31 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font)
             }
         }
 
-        deltaTime = clock.restart().asSeconds();
-        if (!isAlgorithmSelectionWindowOpen && isTimerRunning)
+        if (isTimerRunning)
         {
-            timer -= deltaTime;
-            timerText.setString("Time left: " + std::to_string(static_cast<int>(timer)) + " seconds");
-
+            deltaTime = clock.restart().asSeconds();
+            timer -= deltaTime;   
             if (timer <= 0.0f)
             {
+                window.setView(window.getDefaultView());
+                timerText.setString("Time is up!");
+                timerText.setPosition(timerBox.getPosition().x + (timerBoxWidth - timerText.getLocalBounds().width) / 2,
+                                        timerBox.getPosition().y + (timerBoxHeight - timerText.getLocalBounds().height) / 2);
+                editorText.setString("Time's up!\nPress enter to save your map\nPress escape to continue without saving\n");
+                editorText.setOrigin(editorText.getLocalBounds().width / 2.0, editorText.getLocalBounds().height / 2.0);
+                editorText.setPosition(editorText.getLocalBounds().width - 30, editorText.getLocalBounds().height + 20);
                 isTimerRunning = false;
-                timer = 30.0f;
+                while (this->selectedAlgorithm == nullptr)
+                {
+                    this->runAlgorithmSelectionWindow(window, font);
+                }
+            }
+            else
+            {
                 timerText.setString("Time left: " + std::to_string(static_cast<int>(timer)) + " seconds");
             }
         }
-
+        
         window.setView(window.getDefaultView());
         window.draw(editorText);
         window.draw(clearGridButton);
@@ -391,7 +357,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font)
 
         window.setView(camera);
         window.draw(this->board);
-        window.display();
+        window.display();        
     }
     return this->board.finish->id % this->board.numCols;
 }
@@ -442,4 +408,76 @@ string Player::getFileName(RenderWindow& window, Font& font)
         window.display();
     }
     return "map";
+}
+
+void Player::runAlgorithmSelectionWindow(RenderWindow& window, Font& font)
+{
+    RenderWindow algorithmSelectionWindow(VideoMode(200, 100), "Choose Algorithm", Style::Titlebar | Style::Close);
+    algorithmSelectionWindow.setPosition(getCenteredPosition(window, Vector2u(200, 100)));
+    algorithmSelectionWindow.setFramerateLimit(360);
+
+    while (algorithmSelectionWindow.isOpen())
+    {
+        Event algorithmEvent;
+        while (algorithmSelectionWindow.pollEvent(algorithmEvent))
+        {
+            switch (algorithmEvent.type)
+            {
+            case Event::Closed:
+                algorithmSelectionWindow.close();
+                break;
+
+            case Event::MouseButtonPressed:
+                if (algorithmEvent.mouseButton.button == Mouse::Left)
+                {
+                    // Check if Option 1 is clicked
+                    if (algorithmEvent.mouseButton.x >= 0 && algorithmEvent.mouseButton.x <= 200 &&
+                        algorithmEvent.mouseButton.y >= 0 && algorithmEvent.mouseButton.y <= 50)
+                    {
+                        cout << "Breadth-first search chosen" << endl;
+                        selectedAlgorithm = &Board::BFS;
+
+                        algorithmSelectionWindow.close();
+                    }
+                    // Check if Option 2 is clicked
+                    else if (algorithmEvent.mouseButton.x >= 0 && algorithmEvent.mouseButton.x <= 200 &&
+                        algorithmEvent.mouseButton.y >= 50 && algorithmEvent.mouseButton.y <= 100)
+                    {
+                        cout << "Depth-first search chosen" << endl;
+                        selectedAlgorithm = &Board::DFS;
+
+                        algorithmSelectionWindow.close();
+                    }
+                }
+                break;
+            }
+
+            algorithmSelectionWindow.clear(Color(173, 216, 230));
+
+            // Draw Option 1
+            RectangleShape option1Rect(Vector2f(200, 50));
+            option1Rect.setFillColor(Color(66, 135, 245));
+            algorithmSelectionWindow.draw(option1Rect);
+
+            Text option1Text("Breadth-first", font, 18);
+            option1Text.setFillColor(Color::White);
+            option1Text.setOrigin(option1Text.getLocalBounds().width / 2.0f, option1Text.getLocalBounds().height / 2.0f);
+            option1Text.setPosition(100, 25);
+            algorithmSelectionWindow.draw(option1Text);
+
+            // Draw Option 2
+            RectangleShape option2Rect(Vector2f(200, 50));
+            option2Rect.setFillColor(Color(66, 135, 245));
+            option2Rect.setPosition(0, 50);
+            algorithmSelectionWindow.draw(option2Rect);
+
+            Text option2Text("Depth-first", font, 18);
+            option2Text.setFillColor(Color::White);
+            option2Text.setOrigin(option2Text.getLocalBounds().width / 2.0f, option2Text.getLocalBounds().height / 2.0f);
+            option2Text.setPosition(100, 75);
+            algorithmSelectionWindow.draw(option2Text);
+
+            algorithmSelectionWindow.display();
+        }
+    }
 }

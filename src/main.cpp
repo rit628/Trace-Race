@@ -142,9 +142,8 @@ int main(int argc, char const *argv[])
                         // Enter edit mode for player 1
                         p1->buildBoard(numRows, numCols);
                         unsigned int finishCol = p1->editBoard(window, font);
-                        p2->generateBoard(numRows, numCols, finishCol);
-                        // p2->buildBoard(numRows, numCols);
-                        // p2->editBoard(window, font);
+                        p2->buildBoard(numRows, numCols);
+                        p2->editBoard(window, font, finishCol);
                         window.setView(window.getDefaultView());
                         battle(window, p1, p2, font);                   
                     }
@@ -155,10 +154,10 @@ int main(int argc, char const *argv[])
                         window.pollEvent(event);
                         fileName = loadMenu(window, font, "Enter File Name (No Extension): \n          ",
                                             loadMenuSprite);
-                        p1->buildBoard(fileName);
-                        p1->editBoard(window, font);
-                        p2->buildBoard(fileName);
-                        p2->editBoard(window, font);
+                        pair<int, int> dims = p1->buildBoard(fileName);
+                        unsigned int finishCol = p1->editBoard(window, font);
+                        p2->buildBoard(dims.first, dims.second);
+                        p2->editBoard(window, font, finishCol);
                         battle(window, p1, p2, font);
                         window.setView(window.getDefaultView());
                     }
@@ -327,7 +326,7 @@ void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
     bool panning = false;
     Vector2f m0, m1;
     Vector2i pixel;
-    View camera = window.getDefaultView();
+    sf::View camera(sf::FloatRect(0, 0, 250, 250));
 
     // Update the initial position and zoom level of the camera view
     float mapWidth = static_cast<float>(final.numCols * final.tileDim);
@@ -420,6 +419,7 @@ void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
                 case Event::KeyPressed:
                     if (event.key.code == Keyboard::Escape)
                     {
+                        window.setView(window.getDefaultView());
                         return;
                     }
                     else if (event.key.code == Keyboard::R)

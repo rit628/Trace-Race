@@ -16,16 +16,16 @@ class Player
         int turn;
         Board board;
     public:
-        bool (Board::*selectedAlgorithm)(Tile*, Tile*, int, std::atomic_bool&) = &Board::BFS;
+        bool (Board::*selectedAlgorithm)(Tile*, Tile*, int, std::atomic_bool&) = nullptr;
         Player(std::string name, int turn);
         ~Player();
         void onClick(sf::Vector2i pos);
         void buildBoard(unsigned int numRows, unsigned int numCols);
-        void buildBoard(std::string fileName);
+        std::pair<int, int> buildBoard(std::string fileName);
         unsigned int generateBoard(unsigned int numRows = 0, unsigned int numCols = 0, int finishCol = -1);
         Board combineBoard(Player& p2);
         void resetBoard(bool wall = false); // Function to reset the board
-        unsigned int editBoard(sf::RenderWindow& window, sf::Font& font);
+        unsigned int editBoard(sf::RenderWindow& window, sf::Font& font, int finishCol = -1);
         std::string getFileName(sf::RenderWindow& window, sf::Font& font);
-        void runAlgorithmSelectionWindow();
+        void runAlgorithmSelectionWindow(sf::RenderWindow& window, sf::Font& font);
 };

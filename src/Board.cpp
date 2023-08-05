@@ -42,7 +42,7 @@ void Board::build(unsigned int numRows, unsigned int numCols)
     }
 }
 
-void Board::build(string fileName)
+pair<int, int> Board::build(string fileName)
 {
     // Builds board from save file
     this->reset();
@@ -84,6 +84,13 @@ void Board::build(string fileName)
     // Sets start and end tiles
     this->tiles.at(startID / numCols).at(startID % numCols)->flip('S');
     this->tiles.at(finishID / numCols).at(finishID % numCols)->flip('F');
+    return {numRows, numCols};
+}
+
+void Board::setFinish(unsigned int col)
+{
+    this->finish = this->tiles.at(0).at(col);
+    this->finish->flip('F');
 }
 
 Board Board::combine(Board& RHS)
