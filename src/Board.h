@@ -29,7 +29,7 @@ class Board : public sf::Drawable
         void updateTile(unsigned int row, unsigned int col, char state = 'N');
         void writeToFile(std::string fileName);
         void generate(unsigned int numRows = 0, unsigned int numCols = 0, int finishID = -1);
-        void makeConnected();
+        void clean();
         bool DFS(Tile* source, Tile* target, int player, std::atomic_bool& raceEnded);
         bool BFS(Tile* source, Tile* target, int player, std::atomic_bool& raceEnded);
 };

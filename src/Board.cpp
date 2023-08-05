@@ -220,7 +220,6 @@ void Board::writeToFile(string fileName)
 
 void Board::generate(unsigned int numRows, unsigned int numCols, int finishID)
 {
-    // O(V^2)
     // Randomly generates dimensions if none were assigned
     if (numRows == 0)
     {
@@ -418,8 +417,9 @@ void Board::generate(unsigned int numRows, unsigned int numCols, int finishID)
     }
 }
 
-void Board::makeConnected()
+void Board::clean()
 {
+    // Cleans the map by removing all disconnected tiles
     // O(V+E)
     // Runs a breadth first search starting at the "start" and "finish" labeled tiles to determine all nodes that can be reached from it
     queue<Tile*> q;

@@ -193,7 +193,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font)
                     }
                     else if (event.key.code == Keyboard::C)
                     {
-                        this->board.makeConnected();
+                        this->board.clean();
                     }
                     
                     else if (event.key.code == Keyboard::Escape)
