@@ -153,6 +153,7 @@ int main(int argc, char const *argv[])
                         window.pollEvent(event);
                         fileName = loadMenu(window, font, "Enter File Name (No Extension): \n          ",
                                             loadMenuSprite);
+                        window.pollEvent(event);
                         pair<int, int> dims = p1->buildBoard(fileName);
                         unsigned int finishCol = p1->editBoard(window, font);
                         p2->buildBoard(dims.first, dims.second);
@@ -200,6 +201,7 @@ string loadMenu(RenderWindow& window, Font& font, const string& query, const sf:
             case Event::KeyPressed:
                 if (event.key.code == Keyboard::Enter)
                 {
+                    window.pollEvent(event);
                     return input;
                 }
                 else if ((event.key.code == Keyboard::Backspace) && (input.size() > 0))
@@ -351,7 +353,7 @@ void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
     dfsText.setStyle(sf::Text::Bold);
     dfsText.setPosition(10, 240);
 
-    sf::Text overlappingText("Overlapping\nAlgorithms", font, 24);
+    sf::Text overlappingText("Overlap", font, 24);
     overlappingText.setFillColor(sf::Color(0, 128, 0)); // Dark green (R=0, G=128, B=0)
     overlappingText.setStyle(sf::Text::Bold);
     overlappingText.setPosition(10, 290);

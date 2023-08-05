@@ -204,6 +204,10 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
                     if (event.key.code == Keyboard::Enter)
                     {
                         window.setView(window.getDefaultView());
+                        while (this->selectedAlgorithm == nullptr)
+                        {
+                            this->runAlgorithmSelectionWindow(window, font);
+                        }
                         fileName = getFileName(window, font);
                         this->board.writeToFile(fileName);
                         this->board.clean();
@@ -211,11 +215,6 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
                         {
                             this->board.generate(this->board.numRows, this->board.numCols, finishCol);
                         }
-                        while (this->selectedAlgorithm == nullptr)
-                        {
-                            this->runAlgorithmSelectionWindow(window, font);
-                        }
-                        
                         return this->board.finish->id % this->board.numCols;
                     }
                     else if (event.key.code == Keyboard::G)
@@ -371,7 +370,7 @@ string Player::getFileName(RenderWindow& window, Font& font)
 {
     // Needs updated UI
     Vector2f winCenter = ((Vector2f)window.getSize()) / 2.0f;
-    string query = "Enter File Name (No Extension): ";
+    string query = "Enter File Name (No Extension): \n          ";
     Text fileSelect(query, font, 24);
     fileSelect.setOrigin(fileSelect.getLocalBounds().width / 2.0, fileSelect.getLocalBounds().height / 2.0);
     fileSelect.setFillColor(Color::Black);
