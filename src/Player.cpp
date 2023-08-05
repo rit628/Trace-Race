@@ -110,6 +110,8 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
     bool editing = false;
     int selectedOption = -1; // Default to no option selected
 
+    View dflt = window.getDefaultView();
+
     Vector2i pixel;
     Vector2i tileHover;
     vector<Vector2i> tileStack;
@@ -165,7 +167,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
 
     // Replace the existing "editorText" definition with the following
     sf::Text editorText("Editor Keybindings:\n\nLeft Click (M1)- Edit Grid\nRight Click (M2)- Pan Grid\n"
-        "Scroll Wheel Up/Down- Zoom In/Out\nEnter- Save Map to File\nEscape- Return to Menu\nG- Procedurally Generate Board\nC- Remove Disconnected Paths", font, editorTextSize);
+        "Scroll Wheel Up/Down- Zoom In/Out\nEnter- Save Map to File\nEscape- Continue Without Saving\nG- Procedurally Generate Board\nC- Remove Disconnected Paths", font, editorTextSize);
     editorText.setOrigin(editorText.getLocalBounds().width / 2.0, editorText.getLocalBounds().height / 2.0);
     editorText.setFillColor(sf::Color::White);
     editorText.setPosition(editorText.getLocalBounds().width + 10, editorText.getLocalBounds().height - 60);
@@ -187,7 +189,10 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
         return this->board.finish->id % this->board.numCols;
     }
     
-    
+    window.setSize(Vector2u(window.getSize().x*1.75, window.getSize().y*1.75));
+    dflt.setSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
+    window.setView(dflt);
+    bool init = false;
     while (window.isOpen())
     {
         window.clear(sf::Color(173, 216, 230));
@@ -196,9 +201,14 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
         {
             switch (event.type)
             {
-            case Event::Closed:
-                window.close();
-                break;
+                case Event::Closed:
+                    window.close();
+                    break;
+
+                case Event::Resized:
+                    dflt.setSize(static_cast<float>(event.size.width), static_cast<float>(event.size.height));
+                    window.setView(dflt);
+                    break;
 
                 case Event::KeyPressed:                  
                     if (event.key.code == Keyboard::Enter)
@@ -209,6 +219,9 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
                             this->runAlgorithmSelectionWindow(window, font);
                         }
                         fileName = getFileName(window, font);
+                        window.setSize(Vector2u(window.getSize().x*1.75, window.getSize().y*1.75));
+                        dflt.setSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
+                        window.setView(dflt);
                         this->board.writeToFile(fileName);
                         this->board.clean();
                         if (!this->board.isValid())
@@ -360,6 +373,18 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
         window.draw(timerText);
 
         window.setView(camera);
+        if (!init)
+        {
+            int size = this->board.numCols*this->board.numRows;
+            while (size > 100)
+            {
+                size/=5;
+                camera.zoom(2);
+            }
+            
+            init = true;
+        }
+        
         window.draw(this->board);
         window.display();        
     }
@@ -368,7 +393,10 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
 
 string Player::getFileName(RenderWindow& window, Font& font)
 {
-    // Needs updated UI
+    View dflt = window.getDefaultView();
+    window.setSize(Vector2u(window.getSize().x/1.75, window.getSize().y/1.75));
+    dflt.setSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
+    window.setView(dflt);
     Vector2f winCenter = ((Vector2f)window.getSize()) / 2.0f;
     string query = "Enter File Name (No Extension): \n          ";
     Text fileSelect(query, font, 24);

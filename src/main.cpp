@@ -335,11 +335,12 @@ void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
     float aspectRatio = static_cast<float>(window.getSize().x) / static_cast<float>(window.getSize().y);
     float viewWidth = aspectRatio * mapHeight;
     camera.setSize(viewWidth, mapHeight);
+    camera.setViewport(sf::FloatRect(.4, .15, 1, 1));
 
     // Adjust the position to move the map downwards and to the right
     float xOffset = -350.0f; // Adjust this value to move the map horizontally (right).
     float yOffset = -670.0f; // Adjust this value to move the map vertically (down).
-    camera.setCenter(mapWidth / 2 + xOffset, mapHeight / 2 + yOffset);
+    camera.setCenter(mapWidth, mapHeight/3);
     camera.zoom(0.7f);
 
     // Create text objects for BFS, DFS, and Overlapping algorithm descriptions
@@ -369,6 +370,7 @@ void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
     textView.setSize(window.getSize().x - viewWidth, window.getSize().y);
     textView.setViewport(sf::FloatRect(viewWidth / static_cast<float>(window.getSize().x), 0.0f, 1.0f, 1.0f));
     window.setView(textView);
+    
     while (window.isOpen())
     {
         Event event;
@@ -420,7 +422,10 @@ void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
                 case Event::KeyPressed:
                     if (event.key.code == Keyboard::Escape)
                     {
-                        window.setView(window.getDefaultView());
+                        View dflt = window.getDefaultView();
+                        window.setSize(Vector2u(window.getSize().x/1.75, window.getSize().y/1.75));
+                        dflt.setSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
+                        window.setView(dflt);
                         return;
                     }
                     else if (event.key.code == Keyboard::R)
