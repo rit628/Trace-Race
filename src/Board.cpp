@@ -160,15 +160,21 @@ void Board::draw(RenderTarget& target, RenderStates states) const
 
 void Board::updateTile(unsigned int row, unsigned int col, char state)
 {
+    // If the tile is a corner, do nothing
+    if (this->tiles.at(row).at(col)->neighbors.size() < 3)
+    {
+        return;
+    }
+    
     // If the tile was selected as the start
     if (state == 'S')
     {
         if (this->start != nullptr)
         {
             this->start->flip();
+            this->paths.erase(this->start->id);
         }
         this->start = this->tiles.at(row).at(col);
-        cout << "set start at: " << this->start->id << endl;
     }
     // If the tile was selected as the finish
     else if (state == 'F')
@@ -176,6 +182,7 @@ void Board::updateTile(unsigned int row, unsigned int col, char state)
         if (this->finish != nullptr)
         {
             this->finish->flip();
+            this->paths.erase(this->finish->id);
         }
         this->finish = this->tiles.at(row).at(col);
     }
@@ -239,6 +246,7 @@ void Board::generate(unsigned int numRows, unsigned int numCols, int finishID)
     int finishRow = 0;
     int startRow = 0;
     int index = dist(gen);
+    // If a finishing point was set by the other player, match it on this board
     if (finishID != -1)
     {
         currVertex = this->tiles.at(0).at(finishID);
@@ -247,6 +255,7 @@ void Board::generate(unsigned int numRows, unsigned int numCols, int finishID)
         currVertex->flip('F');
         this->finish = currVertex;
     }
+    // Otherwise pick a random non-edge tile to begin generating the maze
     else
     {
         finishRow = this->numRows-1;

@@ -79,8 +79,8 @@ int main(int argc, char const *argv[])
     ButtonMaker loadGameButton(0.0f, 319.0f, 315.0f, 52.0f);
     ButtonMaker exitGameButton(477.0f, 477.0f, 106.0f, 36.0f);
 
-    Player* p1 = new Player("Player 1");
-    Player* p2 = new Player("Bot");
+    Player* p1 = new Player("Player 1", 1);
+    Player* p2 = new Player("Bot", 2);
 
     while (window.isOpen())
     {
@@ -381,18 +381,7 @@ void battle(RenderWindow& window, Player* p1, Player* p2)
                     else if (event.key.code == Keyboard::R)
                     {
                         race(final);
-                    }
-                    
-                    else if (event.key.code == Keyboard::B)
-                    {
-                        //cout << final.BFS(final.start, final.finish, 1) << endl;
-                    }
-                    else if (event.key.code == Keyboard::D)
-                    {
-                        //cout << final.DFS(final.start, final.finish, 2) << endl;
-                    }
-                    
-                    
+                    }                    
                     break;
                     
                     

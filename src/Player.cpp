@@ -20,17 +20,46 @@ Vector2i getCenteredPosition(const Window& parent, const Vector2u& size) {
     return Vector2i(parentCenter.x - size.x / 2 + 50, parentCenter.y - size.y / 2);
 }
 
-Player::Player(string name) : name(name) {}
+Player::Player(string name, int turn) : name(name), turn(turn) {}
 
 Player::~Player()
 {
     this->board.reset();
 }
 
-void Player::onClick(Vector2i pos, char state)
+void Player::onClick(Vector2i pos)
 {
     if ((pos.x < this->board.numCols) && (pos.y < this->board.numRows))
     {
+        char state = 'N';
+        if (this->turn == 1)
+        {
+            // If the cursor is over the last row and the first player is editing, add the finish point
+            if (pos.y == this->board.numRows-1)
+            {
+                state = 'F';
+            }
+            // If the cursor is on any edge (excluding corners and the end row) add the start point
+            else if (((pos.y == 0) && ((pos.x != 0) && (pos.x != this->board.numCols-1))) || ((pos.y != 0) && ((pos.x == 0) || (pos.x == this->board.numCols-1))))
+            {
+                state = 'S';
+            }            
+        }
+        else
+        {
+            // If the second player is editing, they cannot change the end point
+            if (pos.y == 0)
+            {
+                return;
+            }
+            // If the cursor is on any edge (excluding corners and the end row) add the start point
+            else if (((pos.y == this->board.numRows-1) && ((pos.x != 0) && (pos.x != this->board.numCols-1))) || ((pos.y != this->board.numRows-1) && ((pos.x == 0) || (pos.x == this->board.numCols-1))))
+            {
+                state = 'S';
+            }            
+        }
+        
+        
         this->board.updateTile(pos.y, pos.x, state);
     }   
 }
@@ -128,7 +157,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font)
 
     // Replace the existing "editorText" definition with the following
     sf::Text editorText("Editor Keybindings:\n\nLeft Click (M1)- Edit Grid\nRight Click (M2)- Pan Grid\n"
-        "Scroll Wheel Up/Down- Zoom In/Out\nEnter- Save Map to File\nEscape- Return to Menu\nS- Set Starting Point\nF- Set Finish Point", font, editorTextSize);
+        "Scroll Wheel Up/Down- Zoom In/Out\nEnter- Save Map to File\nEscape- Return to Menu\nG- Procedurally Generate Board\nC- Remove Disconnected Paths", font, editorTextSize);
     editorText.setOrigin(editorText.getLocalBounds().width / 2.0, editorText.getLocalBounds().height / 2.0);
     editorText.setFillColor(sf::Color::White);
     editorText.setPosition(editorText.getLocalBounds().width + 10, editorText.getLocalBounds().height - 60);
@@ -161,20 +190,6 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font)
                     else if (event.key.code == Keyboard::G)
                     {
                         this->board.generate(this->board.numRows, this->board.numCols);
-                    }
-                    else if (event.key.code == Keyboard::S)
-                    {
-                        coords = window.mapPixelToCoords(Mouse::getPosition(window));
-                        tileHover.x = floor(coords.x/board.tileDim);
-                        tileHover.y = floor(coords.y/board.tileDim);
-                        this->onClick(tileHover, 'S');
-                    }
-                    else if (event.key.code == Keyboard::F)
-                    {
-                        coords = window.mapPixelToCoords(Mouse::getPosition(window));
-                        tileHover.x = floor(coords.x/board.tileDim);
-                        tileHover.y = floor(coords.y/board.tileDim);
-                        this->onClick(tileHover, 'F');
                     }
                     else if (event.key.code == Keyboard::C)
                     {
