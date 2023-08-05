@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <queue>
 #include <stack>
+#include <thread>
 
 using namespace std;
 using namespace sf;
@@ -513,7 +514,7 @@ bool Board::isValid()
     return false;
 }
 
-bool Board::DFS(Tile* source, Tile* target, int player, atomic_bool& raceEnded)
+bool Board::DFS(Tile* source, Tile* target, int player, atomic_bool& raceEnded, chrono::time_point<chrono::high_resolution_clock>& end)
 {
     // O(V+E)
     stack<Tile*> s;
@@ -540,6 +541,7 @@ bool Board::DFS(Tile* source, Tile* target, int player, atomic_bool& raceEnded)
             if (currTile == target)
             {
                 raceEnded = true;
+                end = chrono::high_resolution_clock::now();
                 return true;
             }
         }
@@ -548,10 +550,12 @@ bool Board::DFS(Tile* source, Tile* target, int player, atomic_bool& raceEnded)
             currTile->updateTexture(player);
         }
     }
+    this_thread::sleep_for(std::chrono::milliseconds(10));
+    end = chrono::high_resolution_clock::now();
     return false;
 }
 
-bool Board::BFS(Tile* source, Tile* target, int player, atomic_bool& raceEnded)
+bool Board::BFS(Tile* source, Tile* target, int player, atomic_bool& raceEnded, chrono::time_point<chrono::high_resolution_clock>& end)
 {
     // O(V+E)
     queue<Tile*> q;
@@ -578,6 +582,7 @@ bool Board::BFS(Tile* source, Tile* target, int player, atomic_bool& raceEnded)
             if (currTile == target)
             {
                 raceEnded = true;
+                end = chrono::high_resolution_clock::now();
                 return true;
             }
         }
@@ -586,5 +591,7 @@ bool Board::BFS(Tile* source, Tile* target, int player, atomic_bool& raceEnded)
             currTile->updateTexture(player);
         }        
     }
+    this_thread::sleep_for(std::chrono::milliseconds(10));
+    end = chrono::high_resolution_clock::now();
     return false;
 }

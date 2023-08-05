@@ -10,7 +10,9 @@
 #include "iostream"
 #include <thread>
 #include <atomic>
-#include <functional>
+#include <chrono>
+#include <sstream>
+#include <iomanip>
 
 using namespace std;
 using namespace sf;
@@ -19,7 +21,7 @@ string loadMenu(RenderWindow& window, Font& font, const string& query, const sf:
 void dimensionMenu(RenderWindow& window, const sf::Sprite& backgroundSprite, sf::Sprite& manualMenuSprite, bool& isMatrixClosed, bool& isManualClosed, unsigned int& numRows, unsigned int& numCols, Font& font);
 string manualMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite);
 void battle(RenderWindow& window, Player* p1, Player* p2, Font& font);
-void race(Board& b, Player& p1, Player& p2);
+Player& race(Board& b, Player& p1, Player& p2);
 
 int main(int argc, char const *argv[])
 {
@@ -88,9 +90,6 @@ int main(int argc, char const *argv[])
         bool isMatrixSelectorClosed = false;
         bool isManualInputClosed = false;
         Vector2i  mousePosition = Mouse::getPosition(window);
-        // DEBUG SECTION
-       // MOUSE DEBUGGER
-//        cout << "x: "<< mousePosition.x << " y: "<< mousePosition.y << endl;
 
         window.clear(Color::Blue);
 
@@ -424,7 +423,10 @@ void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
                     }
                     else if (event.key.code == Keyboard::R)
                     {
-                        race(final, *p1, *p2);
+                        Player& winner = race(final, *p1, *p2);
+                        stringstream winText;
+                        winText << winner.getDisplayStr() << " wins!\nTime: " << std::fixed << std::setprecision(3) << winner.endTime << " ms" << endl;
+                        raceText.setString(winText.str());
                     }
                     break;
                     
@@ -449,17 +451,33 @@ void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
     }
 }
 
-void race(Board& b, Player& p1, Player& p2)
+Player& race(Board& b, Player& p1, Player& p2)
 {
     std::atomic<bool> raceFlag{ false };
-
-    
+    chrono::time_point<chrono::high_resolution_clock> start = chrono::high_resolution_clock::now();
+    chrono::time_point<chrono::high_resolution_clock> end1;
+    chrono::time_point<chrono::high_resolution_clock> end2;
     // using p1.selectedAlgorithm = &Board::BFS; or p1.selectedAlgorithm = &Board::DFS;
-    std::thread p1T(p1.selectedAlgorithm, std::ref(b), b.start, b.finish, 1, std::ref(raceFlag));
+    std::thread p1T(p1.selectedAlgorithm, std::ref(b), b.start, b.finish, 1, std::ref(raceFlag), std::ref(end1));
 
     // Calling the selected algorithm for player 2
-    std::thread p2T(p2.selectedAlgorithm, std::ref(b), b.finish, b.start, 2, std::ref(raceFlag));
+    std::thread p2T(p2.selectedAlgorithm, std::ref(b), b.finish, b.start, 2, std::ref(raceFlag), std::ref(end2));
 
     p1T.join();
     p2T.join();
+    
+    chrono::duration<double, std::milli> dt1 = end1 - start;
+    chrono::duration<double, std::milli> dt2 = end2 - start;
+    if (dt1.count() < dt2.count())
+    {
+        p1.score++;
+        p1.endTime = dt1.count();
+        return p1;
+    }
+    else
+    {
+        p2.score++;
+        p2.endTime = dt2.count();
+        return p2;
+    }    
 }

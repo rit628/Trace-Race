@@ -4,6 +4,7 @@
 #include <cmath>
 #include "Board.h"
 #include <atomic>
+#include <chrono>
 
 
 
@@ -12,11 +13,12 @@ class Player
     private:
         std::string name;
         bool editing = false;
-        int score = 0;
         int turn;
         Board board;
     public:
-        bool (Board::*selectedAlgorithm)(Tile*, Tile*, int, std::atomic_bool&) = nullptr;
+        int score = 0;
+        double endTime = 0.0f;
+        bool (Board::*selectedAlgorithm)(Tile*, Tile*, int, std::atomic_bool&, std::chrono::time_point<std::chrono::high_resolution_clock>&) = nullptr;
         Player(std::string name, int turn);
         ~Player();
         std::string getDisplayStr();

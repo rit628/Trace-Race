@@ -1,7 +1,3 @@
-//
-// Created by Catty on 8/3/2023.
-//
-
 #include "ButtonMaker.h"
 
 bool ButtonMaker::isClicked(sf::Vector2i mousePosition) {
