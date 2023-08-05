@@ -185,6 +185,11 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font)
                         window.setView(window.getDefaultView());
                         fileName = getFileName(window, font);
                         this->board.writeToFile(fileName);
+                        this->board.clean();
+                        if (!this->board.isValid())
+                        {
+                            this->board.generate(this->board.numRows, this->board.numCols);
+                        }
                         return this->board.finish->id % this->board.numCols;
                     }
                     else if (event.key.code == Keyboard::G)
@@ -198,7 +203,11 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font)
                     
                     else if (event.key.code == Keyboard::Escape)
                     {
-                        // check if board is valid
+                        this->board.clean();
+                        if (!this->board.isValid())
+                        {
+                            this->board.generate(this->board.numRows, this->board.numCols);
+                        }
                         return this->board.finish->id % this->board.numCols;
                     }
                     break;

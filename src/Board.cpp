@@ -62,6 +62,7 @@ void Board::build(string fileName)
     bool isWall;
     unsigned int x;
     unsigned int y;
+    // Gets data for each tile
     for (int i = 0; i < numRows; i++)
     {
         temp.clear();
@@ -80,6 +81,7 @@ void Board::build(string fileName)
         }
         this->tiles.push_back(temp);
     }
+    // Sets start and end tiles
     this->tiles.at(startID / numCols).at(startID % numCols)->flip('S');
     this->tiles.at(finishID / numCols).at(finishID % numCols)->flip('F');
 }
@@ -87,7 +89,9 @@ void Board::build(string fileName)
 Board Board::combine(Board& RHS)
 {
     Board combined;
+    // Creates a new board with double the height
     combined.build(this->numRows*2, this->numCols);
+    // Add top tiles
     for (int i = 0; i < numRows; i++)
     {
         for (int j = 0; j < numCols; j++)
@@ -96,6 +100,7 @@ Board Board::combine(Board& RHS)
             combined.tiles.at(i).at(j)->flip();
         }
     }
+    // Append bottom tiles
     for (int i = 0; i < numRows; i++)
     {
         for (int j = 0; j < numCols; j++)
@@ -119,6 +124,7 @@ Board Board::combine(Board& RHS)
 
 void Board::resetTiles(bool isWall)
 {
+    // Resets tiles to initial state without rebuilding board
     for (auto& row : tiles)
     {
         for (auto& tile : row)
@@ -134,6 +140,7 @@ void Board::resetTiles(bool isWall)
 
 void Board::reset()
 {
+    // Resets tiles to prepare board for rebuilding or deletion
     for (auto row : tiles)
     {
         for (auto tile : row)
@@ -419,9 +426,8 @@ void Board::generate(unsigned int numRows, unsigned int numCols, int finishID)
 
 void Board::clean()
 {
-    // Cleans the map by removing all disconnected tiles
     // O(V+E)
-    // Runs a breadth first search starting at the "start" and "finish" labeled tiles to determine all nodes that can be reached from it
+    // Cleans the map by removing all disconnected tiles identified via a breadth first search  
     queue<Tile*> q;
     map<int, Tile*> visited;
     Tile* currTile;
@@ -454,17 +460,50 @@ void Board::clean()
     
     map<int, Tile*> connected;
     map<int, Tile*> disconnected;
-    // Computes the intersection between the set of travelable nodes and the set of nodes reachable by from the start
+    // Computes the intersection between the set of travelable (path) tiles and the set of tiles reachable by from the start or finish
     set_intersection(visited.begin(), visited.end(), this->paths.begin(), this->paths.end(), inserter(connected, connected.end()));
-    // Finds the nodes that were marked as travelable but were not reachable from the start
+    // Finds the tiles that were marked as travelable (path tiles) but were not reachable from the start or finish
     set_difference(this->paths.begin(), this->paths.end(), visited.begin(), visited.end(), inserter(disconnected, disconnected.end()));
     this->paths = connected;
-    // All disconnected nodes are marked as not travelable
+    // All disconnected tiles are marked as not travelable (and removed from path set)
     for (auto i : disconnected)
     {
         i.second->flip();
     }
     
+}
+
+bool Board::isValid()
+{
+    // O(V+E)
+    // Runs a depth first search with source = start and target = finish to check if the map is valid
+    stack<Tile*> s;
+    map<int, Tile*> visited;
+    Tile* currTile;
+    if (this->start != nullptr)
+    {
+        s.push(this->start);
+        visited.emplace(this->start->id, this->start);
+    }
+
+    while (!s.empty())
+    {
+        currTile = s.top();
+        s.pop();
+        for (auto tile : currTile->neighbors)
+        {
+            if ((visited.count(tile.second->id) == 0) && (!tile.second->isWall))
+            {
+                s.push(tile.second);
+                visited.emplace(tile.second->id, tile.second);
+            }
+            if (tile.second == this->finish)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 bool Board::DFS(Tile* source, Tile* target, int player, atomic_bool& raceEnded)

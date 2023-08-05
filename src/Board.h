@@ -30,6 +30,7 @@ class Board : public sf::Drawable
         void writeToFile(std::string fileName);
         void generate(unsigned int numRows = 0, unsigned int numCols = 0, int finishID = -1);
         void clean();
+        bool isValid();
         bool DFS(Tile* source, Tile* target, int player, std::atomic_bool& raceEnded);
         bool BFS(Tile* source, Tile* target, int player, std::atomic_bool& raceEnded);
 };
