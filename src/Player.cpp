@@ -127,8 +127,8 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font)
     const int editorTextSize = 14; // Choose the desired size
 
     // Replace the existing "editorText" definition with the following
-    sf::Text editorText("Editor Keybindings:\n\nLeft Click (M1)- Edit Grid\nRight Click (M2)- Pan Grid\n"
-        "Scroll Wheel Up/Down- Zoom In/Out\nEnter- Save Map to File\nEscape- Return to Menu\nS- Set Starting Point\nF- Set Finish Point", font, editorTextSize);
+    sf::Text editorText("Editor Keybindings:\nLeft Click (M1)- Edit Grid\nRight Click (M2)- Pan Grid\n"
+        "Scroll Wheel Up/Down- Zoom In/Out\nEnter- Save Map to File\nEscape- Return to Menu\nS- Set Starting Point\nF- Set Finish Point\nG- Create Map", font, editorTextSize);
     editorText.setOrigin(editorText.getLocalBounds().width / 2.0, editorText.getLocalBounds().height / 2.0);
     editorText.setFillColor(sf::Color::White);
     editorText.setPosition(editorText.getLocalBounds().width + 10, editorText.getLocalBounds().height - 60);

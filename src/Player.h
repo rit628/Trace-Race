@@ -13,7 +13,7 @@ class Player
         std::string name;
         bool editing = false;
         int score = 0;
-        Board board;
+        
         std::vector<sf::Vector2i> path;
         bool algorithmisBFS;
     public:
@@ -29,4 +29,5 @@ class Player
         unsigned int editBoard(sf::RenderWindow& window, sf::Font& font);
         std::string getFileName(sf::RenderWindow& window, sf::Font& font);
         void runAlgorithmSelectionWindow();
+        Board board;
 };
