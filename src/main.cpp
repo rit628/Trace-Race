@@ -10,6 +10,7 @@
 #include "iostream"
 #include <thread>
 #include <atomic>
+#include <functional>
 
 using namespace std;
 using namespace sf;
@@ -403,11 +404,17 @@ void battle(RenderWindow& window, Player* p1, Player* p2)
     }
 }
 
-void race(Board& b)
+void race(Board& b, Player& p1, Player& p2)
 {
-    atomic_bool raceFlag{false};
-    thread p1T(&Board::BFS, b, b.start, b.finish, 1, std::ref(raceFlag));
-    thread p2T(&Board::DFS, b, b.finish, b.start, 0, std::ref(raceFlag));
+    std::atomic<bool> raceFlag{ false };
+
+    
+    // using p1.selectedAlgorithm = &Board::BFS; or p1.selectedAlgorithm = &Board::DFS;
+    std::thread p1T(p1.selectedAlgorithm, &b, b.start, b.finish, 1, std::ref(raceFlag));
+
+    // Calling the selected algorithm for player 2
+    std::thread p2T(p2.selectedAlgorithm, &b, b.finish, b.start, 0, std::ref(raceFlag));
+
     p1T.join();
     p2T.join();
 }

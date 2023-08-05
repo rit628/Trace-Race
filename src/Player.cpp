@@ -233,7 +233,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font)
                                             algorithmEvent.mouseButton.y >= 0 && algorithmEvent.mouseButton.y <= 50)
                                         {
                                             cout << "Breadth-first search chosen" << endl;
-                                            selectedAlgorithm = PathfindingAlgorithm::BreadthFirstSearch;
+                                            selectedAlgorithm = &Board::BFS;
 
                                             algorithmSelectionWindow.close();
                                         }
@@ -242,7 +242,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font)
                                             algorithmEvent.mouseButton.y >= 50 && algorithmEvent.mouseButton.y <= 100)
                                         {
                                             cout << "Depth-first search chosen" << endl;
-                                            selectedAlgorithm = PathfindingAlgorithm::DepthFirstSearch;
+                                            selectedAlgorithm = &Board::DFS;
 
                                             algorithmSelectionWindow.close();
                                         }
@@ -278,10 +278,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font)
                                 algorithmSelectionWindow.display();
                             }
                         }
-                        if (selectedAlgorithm == PathfindingAlgorithm::BreadthFirstSearch || selectedAlgorithm == PathfindingAlgorithm::DepthFirstSearch)
-                        {
-                            cout << "Algorithm selected: " << (selectedAlgorithm == PathfindingAlgorithm::BreadthFirstSearch ? "Breadth-first search" : "Depth-first search") << endl;
-                        }
+
 
                         isAlgorithmSelectionWindowOpen = false;
                     }
