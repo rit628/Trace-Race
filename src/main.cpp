@@ -19,7 +19,7 @@ string loadMenu(RenderWindow& window, Font& font, const string& query, const sf:
 void dimensionMenu(RenderWindow& window, const sf::Sprite& backgroundSprite, sf::Sprite& manualMenuSprite, bool& isMatrixClosed, bool& isManualClosed, unsigned int& numRows, unsigned int& numCols, Font& font);
 string manualMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite);
 void battle(RenderWindow& window, Player* p1, Player* p2);
-void race(Board& b);
+void race(Board& b, Player& p1, Player& p2);
 
 int main(int argc, char const *argv[])
 {
@@ -381,7 +381,7 @@ void battle(RenderWindow& window, Player* p1, Player* p2)
                     }
                     else if (event.key.code == Keyboard::R)
                     {
-                        race(final);
+                        race(final, *p1, *p2);
                     }
                     
                     else if (event.key.code == Keyboard::B)
@@ -410,10 +410,10 @@ void race(Board& b, Player& p1, Player& p2)
 
     
     // using p1.selectedAlgorithm = &Board::BFS; or p1.selectedAlgorithm = &Board::DFS;
-    std::thread p1T(p1.selectedAlgorithm, &b, b.start, b.finish, 1, std::ref(raceFlag));
+    std::thread p1T(p1.selectedAlgorithm, std::ref(b), b.start, b.finish, 1, std::ref(raceFlag));
 
     // Calling the selected algorithm for player 2
-    std::thread p2T(p2.selectedAlgorithm, &b, b.finish, b.start, 0, std::ref(raceFlag));
+    std::thread p2T(p2.selectedAlgorithm, std::ref(b), b.finish, b.start, 2, std::ref(raceFlag));
 
     p1T.join();
     p2T.join();

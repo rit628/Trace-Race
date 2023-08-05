@@ -4,7 +4,6 @@
 #include <cmath>
 #include "Board.h"
 #include <atomic>
-#include <functional>
 
 
 
@@ -17,8 +16,8 @@ class Player
         Board board;
         std::vector<sf::Vector2i> path;
         bool algorithmisBFS;
-        std::function<bool(Tile*, Tile*, int, std::atomic<bool>&)> selectedAlgorithm; 
     public:
+        bool (Board::*selectedAlgorithm)(Tile*, Tile*, int, std::atomic_bool&) = &Board::BFS;
         Player(std::string name);
         ~Player();
         void onClick(sf::Vector2i pos, char state = 'N');
@@ -30,6 +29,4 @@ class Player
         unsigned int editBoard(sf::RenderWindow& window, sf::Font& font);
         std::string getFileName(sf::RenderWindow& window, sf::Font& font);
         void runAlgorithmSelectionWindow();
-        bool (Board::*selectedAlgorithm)(Tile*, Tile*, int, atomic_bool&);
-
 };
