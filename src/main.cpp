@@ -338,27 +338,27 @@ void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
 
     // Adjust the position to move the map downwards and to the right
     float xOffset = -350.0f; // Adjust this value to move the map horizontally (right).
-    float yOffset = -650.0f; // Adjust this value to move the map vertically (down).
+    float yOffset = -670.0f; // Adjust this value to move the map vertically (down).
     camera.setCenter(mapWidth / 2 + xOffset, mapHeight / 2 + yOffset);
     camera.zoom(0.7f);
 
     // Create text objects for BFS, DFS, and Overlapping algorithm descriptions
-    sf::Text bfsText("BFS algorithm", font, 30);
+    sf::Text bfsText("BFS Algorithm", font, 24);
     bfsText.setFillColor(sf::Color::Blue);
     bfsText.setStyle(sf::Text::Bold);
-    bfsText.setPosition(10, 170);
+    bfsText.setPosition(10, 180);
 
-    sf::Text dfsText("DFS algorithm", font, 30);
+    sf::Text dfsText("DFS Algorithm", font, 24);
     dfsText.setFillColor(sf::Color(204, 102, 0));
     dfsText.setStyle(sf::Text::Bold);
-    dfsText.setPosition(10, 230);
+    dfsText.setPosition(10, 240);
 
-    sf::Text overlappingText("Overlapping\nalgorithms", font, 30);
+    sf::Text overlappingText("Overlapping\nAlgorithms", font, 24);
     overlappingText.setFillColor(sf::Color(0, 128, 0)); // Dark green (R=0, G=128, B=0)
     overlappingText.setStyle(sf::Text::Bold);
     overlappingText.setPosition(10, 290);
 
-    sf::Text raceText("Press 'R' to Race!\n\n\n\n\nKEY:", font, 24);
+    sf::Text raceText("Press 'R' to Race!\n\n\n\nKEY:", font, 28);
     raceText.setFillColor(sf::Color::Black);
     raceText.setStyle(sf::Text::Bold);
     raceText.setPosition(10, 20);
