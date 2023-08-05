@@ -421,17 +421,21 @@ void Board::generate(unsigned int numRows, unsigned int numCols, int finishID)
 void Board::makeConnected()
 {
     // O(V+E)
-    // Runs a breadth first search starting at the "start" labeled tile to determine all nodes that can be reached from it
+    // Runs a breadth first search starting at the "start" and "finish" labeled tiles to determine all nodes that can be reached from it
     queue<Tile*> q;
     map<int, Tile*> visited;
-    Tile* currTile = this->start;
-    if (currTile == nullptr)
+    Tile* currTile;
+    if (this->start != nullptr)
     {
-        return;
+        q.push(this->start);
+        visited.emplace(this->start->id, this->start);
     }
-    
-    q.push(currTile);
-    visited.emplace(currTile->id, currTile);
+    if (this->finish != nullptr)
+    {
+        q.push(this->finish);
+        visited.emplace(this->finish->id, this->finish);
+    }
+
     while (!q.empty())
     {
         currTile = q.front();
@@ -447,6 +451,7 @@ void Board::makeConnected()
         }
         
     }
+    
     map<int, Tile*> connected;
     map<int, Tile*> disconnected;
     // Computes the intersection between the set of travelable nodes and the set of nodes reachable by from the start
@@ -454,12 +459,10 @@ void Board::makeConnected()
     // Finds the nodes that were marked as travelable but were not reachable from the start
     set_difference(this->paths.begin(), this->paths.end(), visited.begin(), visited.end(), inserter(disconnected, disconnected.end()));
     this->paths = connected;
-    cout << "Disconnected Nodes" << endl;
     // All disconnected nodes are marked as not travelable
     for (auto i : disconnected)
     {
         i.second->flip();
-        cout << i.first << endl;
     }
     
 }
