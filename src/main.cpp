@@ -83,7 +83,7 @@ int main(int argc, char const *argv[])
     ButtonMaker exitGameButton(477.0f, 477.0f, 106.0f, 36.0f);
 
     Player* p1 = new Player("Player 1", 1);
-    Player* p2 = new Player("Bot", 2);
+    Player* p2 = new Player("Player 2", 2);
 
     while (window.isOpen())
     {
