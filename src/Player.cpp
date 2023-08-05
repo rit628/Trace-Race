@@ -29,6 +29,11 @@ string Player::getDisplayStr()
     return this->name + algo;
 }
 
+void Player::setName(string name)
+{
+    this->name = name;
+}
+
 void Player::onClick(Vector2i pos)
 {
     if ((pos.x < this->board.numCols) && (pos.y < this->board.numRows))
@@ -226,10 +231,10 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
                         {
                             this->runAlgorithmSelectionWindow(window, font);
                         }
-                        fileName = getFileName(window, font);
-                        window.setSize(Vector2u(window.getSize().x*1.75, window.getSize().y*1.75));
+                        window.setSize(Vector2u(window.getSize().x/1.75, window.getSize().y/1.75));
                         dflt.setSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
                         window.setView(dflt);
+                        fileName = getFileName(window, font);
                         this->board.writeToFile(fileName);
                         this->board.clean();
                         if (!this->board.isValid())
@@ -258,6 +263,9 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
                         {
                             this->runAlgorithmSelectionWindow(window, font);
                         }
+                        window.setSize(Vector2u(window.getSize().x/1.75, window.getSize().y/1.75));
+                        dflt.setSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
+                        window.setView(dflt);
                         return this->board.finish->id % this->board.numCols;
                     }
                     break;
@@ -401,12 +409,8 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
 
 string Player::getFileName(RenderWindow& window, Font& font)
 {
-    View dflt = window.getDefaultView();
-    window.setSize(Vector2u(window.getSize().x/1.75, window.getSize().y/1.75));
-    dflt.setSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
-    window.setView(dflt);
     Vector2f winCenter = ((Vector2f)window.getSize()) / 2.0f;
-    string query = "Enter File Name (No Extension): \n          ";
+    string query = "Enter File Name (No Extension): \n             ";
     Text fileSelect(query, font, 24);
     fileSelect.setOrigin(fileSelect.getLocalBounds().width / 2.0, fileSelect.getLocalBounds().height / 2.0);
     fileSelect.setFillColor(Color::Black);
@@ -427,7 +431,7 @@ string Player::getFileName(RenderWindow& window, Font& font)
             case Event::KeyPressed:
                 if (event.key.code == Keyboard::Enter)
                 {
-                    return input;
+                    return (input.size() == 0) ? "map" : input;
                 }
                 else if ((event.key.code == Keyboard::Backspace) && (input.size() > 0))
                 {

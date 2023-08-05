@@ -124,6 +124,15 @@ int main(int argc, char const *argv[])
                 case Event::MouseButtonPressed:
                     // start new game
                     if (newGameButton.isClicked(mousePosition)){
+                        string response = loadMenu(window, font, "AI Opponent? (Y\\N):\n        ", loadMenuSprite);
+                        if (response == "N" || response == "n")
+                        {
+                            p2->setName("Player 2");
+                        }
+                        else
+                        {
+                            p2->setName("Bot");
+                        } 
                         bool isMatrixInput = false;
                         dimensionMenu(window, dimensionMenuSprite, manualMenuSprite, isMatrixInput, isManualInputClosed, numRows, numCols, font);
                         window.setFramerateLimit(360);
@@ -151,8 +160,18 @@ int main(int argc, char const *argv[])
                     {
                         // Enter edit mode for player 1 based on file
                         window.pollEvent(event);
-                        fileName = loadMenu(window, font, "Enter File Name (No Extension): \n          ",
+                        fileName = loadMenu(window, font, "Enter File Name (No Extension): \n             ",
                                             loadMenuSprite);
+                        window.pollEvent(event);
+                        string response = loadMenu(window, font, "AI Opponent? (Y\\N):\n        ", loadMenuSprite);
+                        if (response == "N" || response == "n")
+                        {
+                            p2->setName("Player 2");
+                        }
+                        else
+                        {
+                            p2->setName("Bot");
+                        }
                         window.pollEvent(event);
                         pair<int, int> dims = p1->buildBoard(fileName);
                         unsigned int finishCol = p1->editBoard(window, font);
@@ -328,6 +347,10 @@ void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
     Vector2f m0, m1;
     Vector2i pixel;
     sf::View camera(sf::FloatRect(0, 0, 250, 250));
+    View dflt = window.getDefaultView();
+    window.setSize(Vector2u(window.getSize().x*1.75, window.getSize().y*1.75));
+    dflt.setSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
+    window.setView(dflt);
 
     // Update the initial position and zoom level of the camera view
     float mapWidth = static_cast<float>(final.numCols * final.tileDim);
@@ -420,7 +443,7 @@ void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
                     }
                     break;
                 case Event::KeyPressed:
-                    if (event.key.code == Keyboard::Escape)
+                    if ((event.key.code == Keyboard::Escape) || (event.key.code == Keyboard::Enter))
                     {
                         View dflt = window.getDefaultView();
                         window.setSize(Vector2u(window.getSize().x/1.75, window.getSize().y/1.75));
