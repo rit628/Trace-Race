@@ -42,11 +42,13 @@ void Tile::draw(RenderTarget& target, RenderStates states) const
 void Tile::flip(char state)
 {
     isWall = !isWall;
+    // If tile is the start
     if (state == 'S')
     {
         this->sprites.at(0).setTexture(start);
         isWall = false;
     }
+    // If tile is the finish
     else if (state == 'F')
     {
         this->sprites.at(0).setTexture(finish);
@@ -64,6 +66,7 @@ void Tile::flip(char state)
 
 void Tile::addNeighbor(Direction d, Tile* tile)
 {
+    // Adds an undirected edge between tiles
     Direction opposite = (d == Direction::N) ? Direction::S : Direction::E;
     this->neighbors.emplace(d, tile);
     tile->neighbors.emplace(opposite, this);
@@ -71,8 +74,10 @@ void Tile::addNeighbor(Direction d, Tile* tile)
 
 void Tile::updateTexture(int player)
 {
+    // Player 1 gets blue texture
     if (player == 1)
     {
+        // If the textures overlap, add a third texture to avoid path disconnections
         if (this->sprites.at(0).getTexture() == &Tile::p2)
         {
             this->sprites.at(0).setTexture(overlap);
@@ -82,6 +87,7 @@ void Tile::updateTexture(int player)
             this->sprites.at(0).setTexture(p1);
         }
     }
+    // Player 2 gets orange texture
     else
     {
         if (this->sprites.at(0).getTexture() == &Tile::p1)
