@@ -78,13 +78,28 @@ pair<int, int> Board::build(string fileName)
             file >> buff;
             y = stoi(buff);
             temp.push_back(new Tile(x, y, id, isWall));
-            this->paths.emplace(id, temp.at(j));
+            // Adds West Neighbor
+            if (j > 0)
+            {
+                temp.at(j)->addNeighbor(Direction::W, temp.at(j-1));
+            }
+            // Adds North Neighbor
+            if (i > 0)
+            {
+                temp.at(j)->addNeighbor(Direction::N, this->tiles.at(i-1).at(j));
+            }  
+            if (!isWall)
+            {
+                this->paths.emplace(id, temp.at(j));
+            }
         }
         this->tiles.push_back(temp);
     }
     // Sets start and end tiles
-    this->tiles.at(startID / numCols).at(startID % numCols)->flip('S');
-    this->tiles.at(finishID / numCols).at(finishID % numCols)->flip('F');
+    this->start = this->tiles.at(startID / numCols).at(startID % numCols);
+    this->start->flip('S');
+    this->finish = this->tiles.at(finishID / numCols).at(finishID % numCols);
+    this->finish->flip('F');
     return {numRows, numCols};
 }
 
