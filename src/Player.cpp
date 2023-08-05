@@ -183,9 +183,17 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
         this->board.setFinish(finishCol);
     }
     
+    sf::Color backgroundColorPlayer1(173, 216, 230); // Light pastel blue color
+    // Define background color for player 2 (soft pastel orange)
+    sf::Color backgroundColorPlayer2(255, 192, 128); // You can adjust the RGB values to get the desired pastel orange color.
+
+    // Set initial background color based on the turn variable
+    window.clear((turn == 1) ? backgroundColorPlayer1 : backgroundColorPlayer2);
+
     while (window.isOpen())
     {
-        window.clear(sf::Color(173, 216, 230));
+        // Update background color based on the current player's turn
+        window.clear((turn == 1) ? backgroundColorPlayer1 : backgroundColorPlayer2);
         Event event;
         while (window.pollEvent(event))
         {
