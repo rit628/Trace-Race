@@ -19,6 +19,7 @@ class Player
         bool (Board::*selectedAlgorithm)(Tile*, Tile*, int, std::atomic_bool&) = nullptr;
         Player(std::string name, int turn);
         ~Player();
+        std::string getDisplayStr();
         void onClick(sf::Vector2i pos);
         void buildBoard(unsigned int numRows, unsigned int numCols);
         std::pair<int, int> buildBoard(std::string fileName);

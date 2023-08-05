@@ -342,13 +342,13 @@ void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
     camera.zoom(0.7f);
 
     // Create text objects for BFS, DFS, and Overlapping algorithm descriptions
-    sf::Text bfsText("BFS Algorithm", font, 24);
-    bfsText.setFillColor(sf::Color::Blue);
+    sf::Text bfsText(p1->getDisplayStr(), font, 24);
+    bfsText.setFillColor(sf::Color(63, 72, 204));
     bfsText.setStyle(sf::Text::Bold);
     bfsText.setPosition(10, 180);
 
-    sf::Text dfsText("DFS Algorithm", font, 24);
-    dfsText.setFillColor(sf::Color(204, 102, 0));
+    sf::Text dfsText(p2->getDisplayStr(), font, 24);
+    dfsText.setFillColor(sf::Color(255, 127, 39));
     dfsText.setStyle(sf::Text::Bold);
     dfsText.setPosition(10, 240);
 

@@ -28,6 +28,12 @@ Player::~Player()
     this->board.reset();
 }
 
+string Player::getDisplayStr()
+{
+    string algo = (this->selectedAlgorithm == &Board::BFS) ? " - BFS" : " - DFS";
+    return this->name + algo;
+}
+
 void Player::onClick(Vector2i pos)
 {
     if ((pos.x < this->board.numCols) && (pos.y < this->board.numRows))
@@ -182,6 +188,13 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
     {
         this->board.setFinish(finishCol);
     }
+
+    if (this->name == "Bot")
+    {
+        this->generateBoard(this->board.numRows, this->board.numCols, finishCol);
+        return this->board.finish->id % this->board.numCols;
+    }
+    
     
     sf::Color backgroundColorPlayer1(173, 216, 230); // Light pastel blue color
     // Define background color for player 2 (soft pastel orange)
