@@ -3,12 +3,9 @@
 #include <string>
 #include <cmath>
 #include "Board.h"
+#include <atomic>
 
-enum class PathfindingAlgorithm {
-    BreadthFirstSearch,
-    DepthFirstSearch,
-    None
-};
+
 
 class Player
 {   
@@ -18,9 +15,8 @@ class Player
         int score = 0;
         int turn;
         Board board;
-        PathfindingAlgorithm selectedAlgorithm;
-        std::vector<sf::Vector2i> path;
     public:
+        bool (Board::*selectedAlgorithm)(Tile*, Tile*, int, std::atomic_bool&) = &Board::BFS;
         Player(std::string name, int turn);
         ~Player();
         void onClick(sf::Vector2i pos);
@@ -32,5 +28,4 @@ class Player
         unsigned int editBoard(sf::RenderWindow& window, sf::Font& font);
         std::string getFileName(sf::RenderWindow& window, sf::Font& font);
         void runAlgorithmSelectionWindow();
-
 };

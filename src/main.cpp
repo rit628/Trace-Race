@@ -10,6 +10,7 @@
 #include "iostream"
 #include <thread>
 #include <atomic>
+#include <functional>
 
 using namespace std;
 using namespace sf;
@@ -17,8 +18,8 @@ using namespace sf;
 string loadMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite);
 void dimensionMenu(RenderWindow& window, const sf::Sprite& backgroundSprite, sf::Sprite& manualMenuSprite, bool& isMatrixClosed, bool& isManualClosed, unsigned int& numRows, unsigned int& numCols, Font& font);
 string manualMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite);
-void battle(RenderWindow& window, Player* p1, Player* p2);
-void race(Board& b);
+void battle(RenderWindow& window, Player* p1, Player* p2, Font& font);
+void race(Board& b, Player& p1, Player& p2);
 
 int main(int argc, char const *argv[])
 {
@@ -145,7 +146,7 @@ int main(int argc, char const *argv[])
                         // p2->buildBoard(numRows, numCols);
                         // p2->editBoard(window, font);
                         window.setView(window.getDefaultView());
-                        battle(window, p1, p2);                     
+                        battle(window, p1, p2, font);                   
                     }
                     // load game menu
                     if (loadGameButton.isClicked(mousePosition))
@@ -158,7 +159,7 @@ int main(int argc, char const *argv[])
                         p1->editBoard(window, font);
                         p2->buildBoard(fileName);
                         p2->editBoard(window, font);
-                        battle(window, p1, p2);
+                        battle(window, p1, p2, font);
                         window.setView(window.getDefaultView());
                     }
                     // exit game
@@ -318,17 +319,60 @@ string manualMenu(RenderWindow& window, Font& font, const string& query, const s
     return "";
 }
 
-void battle(RenderWindow& window, Player* p1, Player* p2)
+
+void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
 {
+    
     Board final = p1->combineBoard(*p2);
     bool panning = false;
     Vector2f m0, m1;
     Vector2i pixel;
     View camera = window.getDefaultView();
+
+    // Update the initial position and zoom level of the camera view
+    float mapWidth = static_cast<float>(final.numCols * final.tileDim);
+    float mapHeight = static_cast<float>(final.numRows * final.tileDim);
+    float aspectRatio = static_cast<float>(window.getSize().x) / static_cast<float>(window.getSize().y);
+    float viewWidth = aspectRatio * mapHeight;
+    camera.setSize(viewWidth, mapHeight);
+
+    // Adjust the position to move the map downwards and to the right
+    float xOffset = -350.0f; // Adjust this value to move the map horizontally (right).
+    float yOffset = -670.0f; // Adjust this value to move the map vertically (down).
+    camera.setCenter(mapWidth / 2 + xOffset, mapHeight / 2 + yOffset);
+    camera.zoom(0.7f);
+
+    // Create text objects for BFS, DFS, and Overlapping algorithm descriptions
+    sf::Text bfsText("BFS Algorithm", font, 24);
+    bfsText.setFillColor(sf::Color::Blue);
+    bfsText.setStyle(sf::Text::Bold);
+    bfsText.setPosition(10, 180);
+
+    sf::Text dfsText("DFS Algorithm", font, 24);
+    dfsText.setFillColor(sf::Color(204, 102, 0));
+    dfsText.setStyle(sf::Text::Bold);
+    dfsText.setPosition(10, 240);
+
+    sf::Text overlappingText("Overlapping\nAlgorithms", font, 24);
+    overlappingText.setFillColor(sf::Color(0, 128, 0)); // Dark green (R=0, G=128, B=0)
+    overlappingText.setStyle(sf::Text::Bold);
+    overlappingText.setPosition(10, 290);
+
+    sf::Text raceText("Press 'R' to Race!\n\n\n\nKEY:", font, 28);
+    raceText.setFillColor(sf::Color::Black);
+    raceText.setStyle(sf::Text::Bold);
+    raceText.setPosition(10, 20);
+
+
+    // Create a view for the text area on the right side
+    sf::View textView;
+    textView.setSize(window.getSize().x - viewWidth, window.getSize().y);
+    textView.setViewport(sf::FloatRect(viewWidth / static_cast<float>(window.getSize().x), 0.0f, 1.0f, 1.0f));
+    window.setView(textView);
     while (window.isOpen())
     {
         Event event;
-        window.clear(Color::Black);
+        window.clear(Color(230, 230, 250));
         
         while (window.pollEvent(event))
         {
@@ -380,23 +424,42 @@ void battle(RenderWindow& window, Player* p1, Player* p2)
                     }
                     else if (event.key.code == Keyboard::R)
                     {
-                        race(final);
-                    }                    
+                        race(final, *p1, *p2);
+                    }
                     break;
                     
                     
             }
         }
+        // Draw the text in the right side view
+        
+        window.setView(window.getDefaultView());
+        window.draw(bfsText);
+        window.draw(dfsText);
+        window.draw(overlappingText);
+        window.draw(raceText);
+
+        // Draw the map in the camera view
+        window.setView(camera);
         window.draw(final);
+
         window.display();
+
+        
     }
 }
 
-void race(Board& b)
+void race(Board& b, Player& p1, Player& p2)
 {
-    atomic_bool raceFlag{false};
-    thread p1T(&Board::BFS, b, b.start, b.finish, 1, std::ref(raceFlag));
-    thread p2T(&Board::DFS, b, b.finish, b.start, 0, std::ref(raceFlag));
+    std::atomic<bool> raceFlag{ false };
+
+    
+    // using p1.selectedAlgorithm = &Board::BFS; or p1.selectedAlgorithm = &Board::DFS;
+    std::thread p1T(p1.selectedAlgorithm, std::ref(b), b.start, b.finish, 1, std::ref(raceFlag));
+
+    // Calling the selected algorithm for player 2
+    std::thread p2T(p2.selectedAlgorithm, std::ref(b), b.finish, b.start, 2, std::ref(raceFlag));
+
     p1T.join();
     p2T.join();
 }
