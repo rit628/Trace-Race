@@ -234,8 +234,12 @@ void Board::writeToFile(string fileName)
     1       Rows, Columns, Start Tile ID, Finish Tile ID
     2-RxC   ID, Wall/Path, x, y
     */
+    if (this->start == nullptr || this->finish == nullptr)
+    {
+        return;
+    }
     ofstream file;
-    file.open("files/maps/"+fileName+".cfg");
+    file.open("files/maps/"+fileName+".cfg");    
     file << this->numRows << ", " << this->numCols << ", " << this->start->id << ", " << this->finish->id << '\n';
     for (auto row : this->tiles)
     {

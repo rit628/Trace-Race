@@ -24,10 +24,10 @@ void MatrixSelector::drawGrid(sf::RenderWindow& window, unsigned int& numRows, u
     float cellWidth = window.getSize().x / static_cast<float>(_maxCols);
     float cellHeight = (window.getSize().y - _extraHeight) / static_cast<float>(_maxRows);
 
-    int selectedRow = -1;
-    int selectedCol = -1;
-    int highlightRow = -1;
-    int highlightCol = -1;
+    int selectedRow = 0;
+    int selectedCol = 0;
+    int highlightRow = 0;
+    int highlightCol = 0;
 
     _cellWidth = cellWidth;
     _cellHeight = cellHeight;
@@ -81,7 +81,14 @@ void MatrixSelector::drawGrid(sf::RenderWindow& window, unsigned int& numRows, u
                 if (i <= highlightRow && j <= highlightCol) {
                     sf::RectangleShape highlightCell(sf::Vector2f(cellWidth - 2.f, cellHeight - 2.f));
                     highlightCell.setPosition(j * cellWidth + 1.f, i * cellHeight + 1.f);
-                    highlightCell.setFillColor(sf::Color::Blue);
+                    if (highlightRow < 2 || highlightCol < 2)
+                    {
+                        highlightCell.setFillColor(sf::Color::Red);
+                    }
+                    else
+                    {
+                        highlightCell.setFillColor(sf::Color::Blue);
+                    }
                     highlightCell.setOutlineColor(sf::Color::Black);
                     highlightCell.setOutlineThickness(1.f);
                     window.draw(highlightCell);
