@@ -10,11 +10,6 @@
 using namespace std;
 using namespace sf;
 
-
-//checking if push works 2
-
-//hi just checking if this works
-
 // Function to calculate the center position of a window relative to another window
 Vector2i getCenteredPosition(const Window& parent, const Vector2u& size) {
     const Vector2i parentCenter(parent.getPosition().x + parent.getSize().x / 2, parent.getPosition().y + parent.getSize().y / 2);
@@ -111,9 +106,6 @@ unsigned int Player::generateBoard(unsigned int numRows, unsigned int numCols, i
 
 unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
 {
-//    sf::Vector2i screenCenter(sf::VideoMode::getDesktopMode().width / 2, sf::VideoMode::getDesktopMode().height / 2);
-//    sf::Vector2i windowPosition(screenCenter.x - window.getSize().x / 2, screenCenter.y - window.getSize().y / 2);
-//    window.setPosition(windowPosition);
     bool panning = false;
     bool editing = false;
     int selectedOption = -1; // Default to no option selected

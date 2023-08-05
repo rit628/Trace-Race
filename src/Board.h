@@ -7,6 +7,7 @@
 #include <string>
 #include <fstream>
 #include <atomic>
+#include <chrono>
 
 class Board : public sf::Drawable
 {
@@ -32,6 +33,6 @@ class Board : public sf::Drawable
         void generate(unsigned int numRows = 0, unsigned int numCols = 0, int finishID = -1);
         void clean();
         bool isValid();
-        bool DFS(Tile* source, Tile* target, int player, std::atomic_bool& raceEnded);
-        bool BFS(Tile* source, Tile* target, int player, std::atomic_bool& raceEnded);
+        bool DFS(Tile* source, Tile* target, int player, std::atomic_bool& raceEnded, std::chrono::time_point<std::chrono::high_resolution_clock>& end);
+        bool BFS(Tile* source, Tile* target, int player, std::atomic_bool& raceEnded, std::chrono::time_point<std::chrono::high_resolution_clock>& end);
 };

@@ -1,7 +1,3 @@
-//
-// Created by Catty on 8/3/2023.
-//
-
 #ifndef TRACE_RACE_MUSICPLAYER_H
 #define TRACE_RACE_MUSICPLAYER_H
 #include <SFML/Graphics.hpp>
