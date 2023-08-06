@@ -206,8 +206,6 @@ int main(int argc, char const *argv[])
 // load menu function
 string loadMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite)
 {
-    // TODO: add dropdown menu for current files
-
     // set text in center of screen for file loading
     Vector2f winCenter = ((Vector2f)window.getSize())/2.0f;
     Text fileSelect(query, font, 24);
@@ -235,12 +233,14 @@ string loadMenu(RenderWindow& window, Font& font, const string& query, const sf:
                     window.pollEvent(event);
                     return input;
                 }
+                // Remove text from render window
                 else if ((event.key.code == Keyboard::Backspace) && (input.size() > 0))
                 {
                     input = input.substr(0, input.size()-1);
                     fileSelect.setString(query + input);
                 }
                 break;
+            // Add text to render window
             case Event::TextEntered:
                 if (isalnum(static_cast<char>(event.text.unicode)))
                 {
@@ -330,12 +330,14 @@ string manualMenu(RenderWindow& window, Font& font, const string& query, const s
                     {
                         return input;
                     }
+                    // Remove text from render window
                     else if ((event.key.code == Keyboard::Backspace) && (input.size() > 0))
                     {
                         input = input.substr(0, input.size()-1);
                         fileSelect.setString(query + input);
                     }
                     break;
+                // Add text to render window
                 case Event::TextEntered:
                     if (isalnum(static_cast<char>(event.text.unicode)))
                     {
@@ -434,6 +436,7 @@ void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
                     }
                     break;
                 case Event::MouseMoved:
+                    // If holding right click, pan the screen
                     if (panning)
                     {
                         m1 = window.mapPixelToCoords(Mouse::getPosition(window));
@@ -444,6 +447,7 @@ void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
                     }
                     break;
                 case Event::MouseWheelMoved:
+                    // If scrolling wheel and not panning the screen, zoom in
                     if (!panning)
                     {
                         float zoom = (event.mouseWheel.delta >= 0) ? .5 : 2;
@@ -497,21 +501,22 @@ void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
 // final race function
 Player& race(Board& b, Player& p1, Player& p2)
 {
+    // atomic bool to terminate other thread once one algorithm finishes
     std::atomic<bool> raceFlag{ false };
     chrono::time_point<chrono::high_resolution_clock> start = chrono::high_resolution_clock::now();
     chrono::time_point<chrono::high_resolution_clock> end1;
     chrono::time_point<chrono::high_resolution_clock> end2;
-    // using p1.selectedAlgorithm = &Board::BFS; or p1.selectedAlgorithm = &Board::DFS;
+    // Splits player 1 and 2 algorithm runs into different threads to allow for simultaneous execution (data race)
     std::thread p1T(p1.selectedAlgorithm, std::ref(b), b.start, b.finish, 1, std::ref(raceFlag), std::ref(end1));
-
-    // Calling the selected algorithm for player 2
     std::thread p2T(p2.selectedAlgorithm, std::ref(b), b.finish, b.start, 2, std::ref(raceFlag), std::ref(end2));
 
     p1T.join();
     p2T.join();
     
+    // Compute end time
     chrono::duration<double, std::milli> dt1 = end1 - start;
     chrono::duration<double, std::milli> dt2 = end2 - start;
+    // Return winner for rendering to screen
     if (dt1.count() < dt2.count())
     {
         p1.score++;

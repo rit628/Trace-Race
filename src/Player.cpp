@@ -94,7 +94,7 @@ void Player::resetBoard(bool wall)
 
 unsigned int Player::generateBoard(unsigned int numRows, unsigned int numCols, int finishCol)
 {
-    // Add random algo choice
+    // Random algorithm selection
     uniform_int_distribution<int> coinFlip(0,1);
     int result = coinFlip(this->board.gen);
     if (result == 0)
@@ -113,7 +113,8 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
 {
     bool panning = false;
     bool editing = false;
-    int selectedOption = -1; // Default to no option selected
+    // Default to no option selected
+    int selectedOption = -1; 
 
     View dflt = window.getDefaultView();
 
@@ -134,6 +135,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
     const int buttonHeight = 30;
     float deltaTime;
 
+    // Initialization of all drawable objects
     sf::RectangleShape clearGridButton(sf::Vector2f(buttonWidth, buttonHeight));
     clearGridButton.setFillColor(sf::Color(66, 135, 245));
     clearGridButton.setPosition(10, 10);
@@ -201,6 +203,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
 
     // Set initial background color based on the turn variable
     window.clear((turn == 1) ? backgroundColorPlayer1 : backgroundColorPlayer2);
+    // Resize window to fit more content
     window.setSize(Vector2u(window.getSize().x*1.5, window.getSize().y*1.5));
     dflt.setSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
     window.setView(dflt);
@@ -227,18 +230,23 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
                     if (event.key.code == Keyboard::Enter)
                     {
                         window.setView(window.getDefaultView());
+                        // If the player has not selected an algorithm, force them to do so
                         while (this->selectedAlgorithm == nullptr)
                         {
                             this->runAlgorithmSelectionWindow(window, font);
                         }
+                        // Undo window resize
                         window.setSize(Vector2u(window.getSize().x/1.5, window.getSize().y/1.5));
                         dflt.setSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
                         window.setView(dflt);
+                        // Prompt for filename and save to file
                         fileName = getFileName(window, font);
                         this->board.writeToFile(fileName);
+                        // Remove disconnections and check if the board has a path from start to finish
                         this->board.clean();
                         if (!this->board.isValid())
                         {
+                            // If board does not have a path from start to finish, generate a new board
                             this->board.generate(this->board.numRows, this->board.numCols, finishCol);
                         }
                         return this->board.finish->id % this->board.numCols;
@@ -254,15 +262,19 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
                     
                     else if (event.key.code == Keyboard::Escape)
                     {
+                        // Remove disconnections and check if the board has a path from start to finish
                         this->board.clean();
                         if (!this->board.isValid())
                         {
+                            // If board does not have a path from start to finish, generate a new board
                             this->board.generate(this->board.numRows, this->board.numCols, finishCol);
                         }
+                        // If the player has not selected an algorithm, force them to do so
                         while (this->selectedAlgorithm == nullptr)
                         {
                             this->runAlgorithmSelectionWindow(window, font);
                         }
+                        // Undo window resize
                         window.setSize(Vector2u(window.getSize().x/1.5, window.getSize().y/1.5));
                         dflt.setSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
                         window.setView(dflt);
@@ -271,12 +283,15 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
                     break;
 
             case Event::MouseButtonPressed:
+                // If the timer is running, allow the player to edit the tiles with left click
                 if ((event.mouseButton.button == Mouse::Left) && (isTimerRunning))
                 {
                     editing = true;
                     coords = window.mapPixelToCoords(Vector2i(event.mouseButton.x, event.mouseButton.y));
+                    // Computes the coordinates of a tile on the grid
                     tileHover.x = floor(coords.x / board.tileDim);
                     tileHover.y = floor(coords.y / board.tileDim);
+                    // Pushes the stack of selected tiles to avoid repeated flips when holding left click
                     tileStack.push_back(tileHover);
                     onClick(tileHover);
                     window.setView(window.getDefaultView());
@@ -284,6 +299,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
                     sf::Vector2f buttonPosition = clearGridButton.getPosition();
                     sf::FloatRect clearGridArea(clearGridText.getGlobalBounds());
                     sf::FloatRect chooseAlgorithmArea(chooseAlgorithmButton.getPosition(), sf::Vector2f(buttonWidth + 60, buttonHeight));
+                    // If player clicked on the clear grid button
                     if (clearGridArea.contains(coords))
                     {
                         this->resetBoard();
@@ -306,6 +322,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
             case Event::MouseButtonReleased:
                 if (event.mouseButton.button == Mouse::Left)
                 {
+                    // Clear tilestack to allow clicking of previously flipped tiles
                     tileStack.clear();
                     editing = false;
                 }
@@ -318,6 +335,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
             case Event::MouseMoved:
                 if (editing)
                 {
+                    // Allows user to select multiple tiles by holding left click
                     coords = window.mapPixelToCoords(Mouse::getPosition(window));
                     tileHover.x = floor(coords.x / board.tileDim);
                     tileHover.y = floor(coords.y / board.tileDim);
@@ -329,6 +347,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
                 }
                 else if (panning)
                 {
+                    // Allows user to pan the map screen to maneuver around the board
                     m1 = window.mapPixelToCoords(Mouse::getPosition(window));
                     camera.setCenter(camera.getCenter() + m0 - m1);
                     camera.move(m0 - m1);
@@ -340,6 +359,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
             case Event::MouseWheelMoved:
                 if (!panning)
                 {
+                    // Allows user to zoom in or out of map screen with scroll wheel
                     float zoom = (event.mouseWheel.delta >= 0) ? .5 : 2;
                     pixel = Vector2i(event.mouseButton.x, event.mouseButton.y);
                     m0 = window.mapPixelToCoords(pixel);
@@ -355,11 +375,14 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
 
         if (isTimerRunning)
         {
+            // Tick the timer down
             deltaTime = clock.restart().asSeconds();
             timer -= deltaTime;   
+            // End the editing phase if time is up
             if (timer <= 0.0f)
             {
                 window.setView(window.getDefaultView());
+                // Edit instructions on time end
                 timerText.setString("Time is up!");
                 timerText.setPosition(timerBox.getPosition().x + (timerBoxWidth - timerText.getLocalBounds().width) / 2,
                                         timerBox.getPosition().y + (timerBoxHeight - timerText.getLocalBounds().height) / 2);
@@ -367,6 +390,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
                 editorText.setOrigin(editorText.getLocalBounds().width / 2.0, editorText.getLocalBounds().height / 2.0);
                 editorText.setPosition(editorText.getLocalBounds().width - 30, editorText.getLocalBounds().height + 20);
                 isTimerRunning = false;
+                // If player has not selected an algorithm, force them to do so
                 while (this->selectedAlgorithm == nullptr)
                 {
                     this->runAlgorithmSelectionWindow(window, font);
@@ -389,6 +413,7 @@ unsigned int Player::editBoard(RenderWindow& window, Font& font, int finishCol)
         window.draw(timerText);
 
         window.setView(camera);
+        // Initializes camera to zoom out to initially fit most of the board in the frame
         if (!init)
         {
             int size = this->board.numCols*this->board.numRows;
@@ -431,8 +456,10 @@ string Player::getFileName(RenderWindow& window, Font& font)
             case Event::KeyPressed:
                 if (event.key.code == Keyboard::Enter)
                 {
+                    // Default filename is map
                     return (input.size() == 0) ? "map" : input;
                 }
+                // Remove text from render window
                 else if ((event.key.code == Keyboard::Backspace) && (input.size() > 0))
                 {
                     input = input.substr(0, input.size() - 1);
@@ -440,6 +467,7 @@ string Player::getFileName(RenderWindow& window, Font& font)
                 }
                 break;
             case Event::TextEntered:
+                // Add text to render window
                 if (isalnum(static_cast<char>(event.text.unicode)))
                 {
                     input += static_cast<char>(event.text.unicode);

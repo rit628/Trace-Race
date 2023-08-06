@@ -458,7 +458,6 @@ void Board::generate(unsigned int numRows, unsigned int numCols, int finishID)
 
 void Board::clean()
 {
-    // O(V+E)
     // Cleans the map by removing all disconnected tiles identified via a breadth first search  
     queue<Tile*> q;
     map<int, Tile*> visited;
@@ -507,7 +506,6 @@ void Board::clean()
 
 bool Board::isValid()
 {
-    // O(V+E)
     // Runs a depth first search with source = start and target = finish to check if the map is valid
     stack<Tile*> s;
     map<int, Tile*> visited;
@@ -540,7 +538,7 @@ bool Board::isValid()
 
 bool Board::DFS(Tile* source, Tile* target, int player, atomic_bool& raceEnded, chrono::time_point<chrono::high_resolution_clock>& end)
 {
-    // O(V+E)
+    // Multithreaded Depth First Search
     stack<Tile*> s;
     map<int, Tile*> visited;
     Tile* currTile = source;
@@ -564,7 +562,9 @@ bool Board::DFS(Tile* source, Tile* target, int player, atomic_bool& raceEnded, 
             }
             if (currTile == target)
             {
+                // Sets atomic bool to true to force other thread to terminate
                 raceEnded = true;
+                // Gets finish time
                 end = chrono::high_resolution_clock::now();
                 return true;
             }
@@ -574,6 +574,7 @@ bool Board::DFS(Tile* source, Tile* target, int player, atomic_bool& raceEnded, 
             currTile->updateTexture(player);
         }
     }
+    // Make thread sleep for 10ms to indicate which algorithm won
     this_thread::sleep_for(std::chrono::milliseconds(10));
     end = chrono::high_resolution_clock::now();
     return false;
@@ -581,7 +582,7 @@ bool Board::DFS(Tile* source, Tile* target, int player, atomic_bool& raceEnded, 
 
 bool Board::BFS(Tile* source, Tile* target, int player, atomic_bool& raceEnded, chrono::time_point<chrono::high_resolution_clock>& end)
 {
-    // O(V+E)
+    // Multithreaded Breadth First Search
     queue<Tile*> q;
     map<int, Tile*> visited;
     Tile* currTile = source;
@@ -605,7 +606,9 @@ bool Board::BFS(Tile* source, Tile* target, int player, atomic_bool& raceEnded, 
             }
             if (currTile == target)
             {
+                // Sets atomic bool to true to force other thread to terminate
                 raceEnded = true;
+                // Gets finish time
                 end = chrono::high_resolution_clock::now();
                 return true;
             }
@@ -615,6 +618,7 @@ bool Board::BFS(Tile* source, Tile* target, int player, atomic_bool& raceEnded, 
             currTile->updateTexture(player);
         }        
     }
+    // Make thread sleep for 10ms to indicate which algorithm won
     this_thread::sleep_for(std::chrono::milliseconds(10));
     end = chrono::high_resolution_clock::now();
     return false;
