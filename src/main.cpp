@@ -17,6 +17,7 @@
 using namespace std;
 using namespace sf;
 
+// initialize menus and final race menu
 string loadMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite);
 void dimensionMenu(RenderWindow& window, const sf::Sprite& backgroundSprite, sf::Sprite& manualMenuSprite, bool& isMatrixClosed, bool& isManualClosed, unsigned int& numRows, unsigned int& numCols, Font& font);
 string manualMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite);
@@ -53,19 +54,18 @@ int main(int argc, char const *argv[])
     sf::Sprite dimensionMenuSprite;
     sf::Sprite loadMenuSprite;
     sf::Sprite manualMenuSprite;
-
     mainMenuSprite.setTexture(mainMenuTexture);
     dimensionMenuSprite.setTexture(dimensionMenuTexture);
     loadMenuSprite.setTexture(loadMenuTexture);
     manualMenuSprite.setTexture(manualMenuTexture);
 
+    // render main window
     RenderWindow window(VideoMode(mainMenuTexture.getSize().x, mainMenuTexture.getSize().y), "Trace Race", Style::Default);
 
-        // Set the initial window position to the center of the screen
+    // Set the initial window position to the center of the screen
     sf::Vector2i screenCenter(monitorWidth / 2, monitorHeight / 2);
     sf::Vector2i windowPosition(screenCenter.x - window.getSize().x / 2, screenCenter.y - window.getSize().y / 2);
     window.setPosition(windowPosition);
-
     window.setFramerateLimit(360);
 
     // music player
@@ -74,23 +74,28 @@ int main(int argc, char const *argv[])
     // load background / adjust scaling
     float scaleX = (float)window.getSize().x / mainMenuTexture.getSize().x;
     float scaleY = (float)window.getSize().y / mainMenuTexture.getSize().y;
-
     mainMenuSprite.setTexture(mainMenuTexture);
     mainMenuSprite.setScale(scaleX, scaleY);
 
+    // create buttons for main menu
     ButtonMaker newGameButton(0.0f, 222.0f, 315.0f, 52.0f);
     ButtonMaker loadGameButton(0.0f, 319.0f, 315.0f, 52.0f);
     ButtonMaker exitGameButton(477.0f, 477.0f, 106.0f, 36.0f);
 
+    // create player objects
     Player* p1 = new Player("Player 1", 1);
     Player* p2 = new Player("Bot", 2);
 
     while (window.isOpen())
     {
+        // create bool(s) for menu switching
         bool isMatrixSelectorClosed = false;
         bool isManualInputClosed = false;
+
+        // track mouse for clicks
         Vector2i  mousePosition = Mouse::getPosition(window);
 
+        // refresh menu
         window.clear(Color::Blue);
 
         Event event;
@@ -134,6 +139,8 @@ int main(int argc, char const *argv[])
                             p2->setName("Bot");
                         } 
                         bool isMatrixInput = false;
+
+                        // create dimension menu
                         dimensionMenu(window, dimensionMenuSprite, manualMenuSprite, isMatrixInput, isManualInputClosed, numRows, numCols, font);
                         window.setFramerateLimit(360);
 
@@ -195,16 +202,20 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
+// load menu function
 string loadMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite)
 {
     // TODO: add dropdown menu for current files
 
+    // set text in center of screen for file loading
     Vector2f winCenter = ((Vector2f)window.getSize())/2.0f;
     Text fileSelect(query, font, 24);
     fileSelect.setOrigin(fileSelect.getLocalBounds().width/2.0, fileSelect.getLocalBounds().height/2.0);
     fileSelect.setFillColor(Color::White);
     fileSelect.setPosition(winCenter);
     string input;
+
+    // while window is open allow player to load game
     while (window.isOpen())
     {
         window.clear(Color::Cyan);
@@ -252,7 +263,7 @@ string loadMenu(RenderWindow& window, Font& font, const string& query, const sf:
         return "10x10";
     }
 }
-
+// create dimension menu for matrix selection or push player to manual menu
 void dimensionMenu(RenderWindow& window, const sf::Sprite& backgroundSprite, sf::Sprite& manualMenuSprite, bool& isMatrixClosed, bool& isManualClosed, unsigned int& numRows, unsigned int& numCols, Font& font)
 {
     while (window.isOpen())
@@ -266,13 +277,14 @@ void dimensionMenu(RenderWindow& window, const sf::Sprite& backgroundSprite, sf:
                 case Event::Closed:
                     window.close();
                     break;
-
+                // f = choose matrix input
                 case Event::KeyPressed:
                     if (event.key.code == Keyboard::F)
                     {
                         isMatrixClosed = true;
                         return;
                     }
+                    // d = manually enter dimensions
                     else if (event.key.code == Keyboard::D)
                     {
                         window.pollEvent(event);
@@ -290,9 +302,10 @@ void dimensionMenu(RenderWindow& window, const sf::Sprite& backgroundSprite, sf:
         window.display();
     }
 }
-
+// manually enter dimensions menu
 string manualMenu(RenderWindow& window, Font& font, const string& query, const sf::Sprite& backgroundSprite)
 {
+    // center text
     Vector2f winCenter = ((Vector2f)window.getSize())/2.0f;
     Text fileSelect(query, font, 24);
     fileSelect.setOrigin(fileSelect.getLocalBounds().width/2.0, fileSelect.getLocalBounds().height/2.0);
@@ -338,7 +351,7 @@ string manualMenu(RenderWindow& window, Font& font, const string& query, const s
     return "";
 }
 
-
+// final menu "battle" function
 void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
 {
     
@@ -480,7 +493,7 @@ void battle(RenderWindow& window, Player* p1, Player* p2, Font& font)
         
     }
 }
-
+// final race function
 Player& race(Board& b, Player& p1, Player& p2)
 {
     std::atomic<bool> raceFlag{ false };

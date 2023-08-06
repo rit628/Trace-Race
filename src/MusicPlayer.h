@@ -11,12 +11,15 @@ class MusicPlayer {
     bool isMuted;
 
 public:
+    // begin music player
     MusicPlayer(): isMuted(false){
         backgroundMusic.openFromFile("files/music/Comfort.ogg");
         backgroundMusic.setLoop(true);
         backgroundMusic.play();
         backgroundMusic.setVolume(20);
     }
+
+    // toggle mute for music player
     void toggleMute(){
         // unmute
         if (isMuted) {

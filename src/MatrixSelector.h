@@ -19,8 +19,10 @@ private:
     const float _extraHeight = 50.f;
 
 public:
+    // constructor
     MatrixSelector(unsigned int maxRows, unsigned int maxCols);
 
+    // grid building function
     void drawGrid(sf::RenderWindow &window, unsigned int& numRows, unsigned int& numCols, bool& isClosed);
 
 };
