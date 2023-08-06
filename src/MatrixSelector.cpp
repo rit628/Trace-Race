@@ -20,6 +20,7 @@ MatrixSelector::MatrixSelector(unsigned int maxRows, unsigned int maxCols) : _ma
     liveDimensions.setPosition(10.f, maxRows * _cellHeight - 30.f);
 }
 
+// grid building function
 void MatrixSelector::drawGrid(sf::RenderWindow& window, unsigned int& numRows, unsigned int& numCols, bool& isClosed) {
     float cellWidth = window.getSize().x / static_cast<float>(_maxCols);
     float cellHeight = (window.getSize().y - _extraHeight) / static_cast<float>(_maxRows);
@@ -69,7 +70,7 @@ void MatrixSelector::drawGrid(sf::RenderWindow& window, unsigned int& numRows, u
                     break;
             }
         }
-
+        // Create outlines
         window.clear(sf::Color(176, 224, 230));
         for (unsigned int i = 0; i < _maxRows; i++) {
             for (unsigned int j = 0; j < _maxCols; j++) {
